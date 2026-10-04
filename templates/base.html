@@ -26,11 +26,41 @@
             -webkit-backdrop-filter: blur(24px);
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
         }
-        .glass-nav-pill {
-            background: rgba(13, 17, 28, 0.7);
+                .glass-nav-pill {
+            background: rgba(13, 17, 28, 0.85);
             border: 1px solid rgba(255, 255, 255, 0.12);
             backdrop-filter: blur(20px);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Mobile: nav ที่ซ่อน แสดงเป็น dropdown เมื่อ .show */
+        @media (max-width: 767px) {
+            .desktop-nav {
+                display: none !important;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                margin-top: 0.5rem;
+                background: rgba(13, 17, 28, 0.98);
+                backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                border-radius: 1.5rem;
+                padding: 0.75rem;
+                flex-direction: column;
+                gap: 0.25rem;
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+                z-index: 50;
+            }
+            .desktop-nav.show {
+                display: flex !important;
+            }
+            .desktop-nav a {
+                width: 100%;
+                justify-content: flex-start;
+                padding: 0.75rem 1rem !important;
+                border-radius: 1rem !important;
+            }
         }
     </style>
 </head>
@@ -46,7 +76,7 @@
             </a>
 
             {% if current_user.username %}
-            <nav class="hidden md:flex items-center space-x-1">
+            <nav id="mainNav" class="desktop-nav hidden md:flex items-center space-x-1">
                 {% if current_user.role == 'customer' %}
                     {# === CUSTOMER NAV === #}
                     <a href="{{ url_for('my_table') }}" class="px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition flex items-center space-x-1.5
@@ -104,6 +134,13 @@
                     <div class="text-xs font-bold text-white leading-none font-heading">{{ current_user.name or current_user.username }}</div>
                     <span class="text-[9px] uppercase tracking-widest font-mono text-[#57ffa8] font-bold">{{ current_user.role }}</span>
                 </div>
+                                <!-- Hamburger (mobile only) -->
+                <button type="button" onclick="toggleMobileNav()"
+                    class="md:hidden w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 flex items-center justify-center transition"
+                    title="เมนู">
+                    <i data-lucide="menu" id="hamburgerIcon" class="w-4 h-4"></i>
+                </button>
+
                 <a href="{{ url_for('logout') }}" class="w-8 h-8 rounded-full bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-white/10 flex items-center justify-center transition" title="ออกจากระบบ">
                     <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
                 </a>
@@ -139,8 +176,32 @@
         <p>KITCHEN OS &copy; 2026. All rights reserved.</p>
     </footer>
 
-    <script>
+        <script>
         lucide.createIcons();
+
+        function toggleMobileNav() {
+            const nav = document.getElementById('mainNav');
+            const icon = document.getElementById('hamburgerIcon');
+            if (!nav) return;
+            if (nav.classList.contains('show')) {
+                nav.classList.remove('show');
+                if (icon) icon.setAttribute('data-lucide', 'menu');
+            } else {
+                nav.classList.add('show');
+                if (icon) icon.setAttribute('data-lucide', 'x');
+            }
+            lucide.createIcons();
+        }
+
+        document.querySelectorAll('#mainNav a').forEach(link => {
+            link.addEventListener('click', () => {
+                const nav = document.getElementById('mainNav');
+                const icon = document.getElementById('hamburgerIcon');
+                if (nav) nav.classList.remove('show');
+                if (icon) icon.setAttribute('data-lucide', 'menu');
+                lucide.createIcons();
+            });
+        });
     </script>
 
     <!-- ============================================================ -->
