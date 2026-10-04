@@ -1,13 +1,1 @@
-[
-  {
-    "id": "BILL001",
-    "table_number": 3,
-    "subtotal": 300.0,
-    "discount": 0.0,
-    "service_charge": 30.0,
-    "vat": 23.1,
-    "total_amount": 353.1,
-    "payment_method": "PromptPay QR",
-    "paid_at": "2026-10-04T21:48:47"
-  }
-]
+[]

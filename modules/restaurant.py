@@ -417,7 +417,18 @@ def place_order(table_id: int, items: List[Dict[str, Any]], note: str = "") -> D
         if not order_items:
             return {"success": False, "message": "ไม่มีรายการอาหารที่ถูกต้อง"}
 
-        order_id: str = f"ORD{len(orders) + 1:03d}"
+                # หา max ID ที่มีอยู่ + 1 (กัน ID ซ้ำ)
+        existing_nums: List[int] = []
+        for o in orders:
+            if isinstance(o, dict):
+                oid = str(o.get("id", ""))
+                if oid.startswith("ORD"):
+                    try:
+                        existing_nums.append(int(oid[3:]))
+                    except ValueError:
+                        pass
+        next_num: int = max(existing_nums, default=0) + 1
+        order_id: str = f"ORD{next_num:03d}"
         new_order: Dict[str, Any] = {
             "id": order_id,
             "table_id": table_id,
@@ -516,7 +527,18 @@ def calculate_and_checkout_bill(
         vat: float = round((after_discount + service_charge) * VAT_RATE, 2)
         total_amount: float = round(after_discount + service_charge + vat, 2)
 
-        bill_id: str = f"BILL{len(bills) + 1:03d}"
+                # หา max ID ที่มีอยู่ + 1 (กัน ID ซ้ำ)
+        existing_bill_nums: List[int] = []
+        for b in bills:
+            if isinstance(b, dict):
+                bid = str(b.get("id", ""))
+                if bid.startswith("BILL"):
+                    try:
+                        existing_bill_nums.append(int(bid[4:]))
+                    except ValueError:
+                        pass
+        next_bill_num: int = max(existing_bill_nums, default=0) + 1
+        bill_id: str = f"BILL{next_bill_num:03d}"
         new_bill: Dict[str, Any] = {
             "id": bill_id,
             "table_number": int(target_table.get("table_number", table_id)),
@@ -564,7 +586,17 @@ def record_log(username: str, role: str, action: str, details: str) -> bool:
         logs: List[Dict[str, Any]] = db.load_json("logs.json", default=[])
         if not isinstance(logs, list):
             logs = []
-        log_id: str = f"LOG{len(logs) + 1:03d}"
+        existing_log_nums: List[int] = []
+        for lg in logs:
+            if isinstance(lg, dict):
+                lid = str(lg.get("id", ""))
+                if lid.startswith("LOG"):
+                    try:
+                        existing_log_nums.append(int(lid[3:]))
+                    except ValueError:
+                        pass
+        next_log_num: int = max(existing_log_nums, default=0) + 1
+        log_id: str = f"LOG{next_log_num:03d}"
         logs.append({
             "id": log_id,
             "timestamp": datetime.now().isoformat(timespec="seconds"),
