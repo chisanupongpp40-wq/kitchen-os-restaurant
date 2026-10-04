@@ -27,7 +27,7 @@
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
         }
         .glass-nav-pill {
-            background: rgba(13, 17, 28, 0.85);
+            background: rgba(13, 17, 28, 0.7);
             border: 1px solid rgba(255, 255, 255, 0.12);
             backdrop-filter: blur(20px);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
@@ -36,60 +36,61 @@
 </head>
 <body class="flex flex-col relative selection:bg-[#57ffa8] selection:text-black">
 
-    <!-- Header Navbar -->
-    <header class="sticky top-2 z-40 max-w-7xl mx-auto px-3 sm:px-4 w-full">
-        <div class="glass-nav-pill rounded-3xl sm:rounded-full px-4 sm:px-6 py-3 flex items-center justify-between gap-2">
-            <!-- Logo -->
-            <a href="{% if current_user.role == 'customer' and current_user.username %}{{ url_for('my_table') }}{% else %}{{ url_for('tables') }}{% endif %}"
-               class="flex items-center space-x-2 text-white font-extrabold tracking-wider flex-shrink-0">
+    <header class="sticky top-4 z-40 max-w-7xl mx-auto px-4 w-full">
+        <div class="glass-nav-pill rounded-full px-6 py-3 flex items-center justify-between">
+            <a href="{% if current_user.role == 'customer' and current_user.username %}{{ url_for('my_table') }}{% else %}{{ url_for('tables') }}{% endif %}" class="flex items-center space-x-2.5 text-white font-extrabold tracking-wider">
                 <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#57ffa8] to-[#a78bfa] text-slate-950 flex items-center justify-center font-black text-sm shadow-[0_0_20px_rgba(87,255,168,0.3)]">
                     <i data-lucide="utensils-crossed" class="w-4 h-4"></i>
                 </div>
-                <span class="text-lg sm:text-xl tracking-tight font-heading text-white">KITCHEN<span class="text-[#57ffa8]">OS</span></span>
+                <span class="text-xl tracking-tight font-heading text-white">KITCHEN<span class="text-[#57ffa8]">OS</span></span>
             </a>
 
             {% if current_user.username %}
-            <!-- Desktop Nav (แสดงเฉพาะ md+) -->
-            <nav class="hidden md:flex items-center space-x-1 flex-1 justify-center">
+            <nav class="hidden md:flex items-center space-x-1">
                 {% if current_user.role == 'customer' %}
-                    <a href="{{ url_for('my_table') }}" class="px-3 lg:px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition flex items-center space-x-1.5
+                    {# === CUSTOMER NAV === #}
+                    <a href="{{ url_for('my_table') }}" class="px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition flex items-center space-x-1.5
                         {% if request.endpoint == 'my_table' %}bg-white/10 text-[#57ffa8] border border-[#57ffa8]/30 font-bold{% else %}text-slate-300 hover:text-white hover:bg-white/5{% endif %}">
                         <i data-lucide="armchair" class="w-3.5 h-3.5"></i>
                         <span>โต๊ะของฉัน</span>
                     </a>
-                    <a href="{{ url_for('select_table') }}" class="px-3 lg:px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition flex items-center space-x-1.5
+                    <a href="{{ url_for('select_table') }}" class="px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition flex items-center space-x-1.5
                         {% if request.endpoint == 'select_table' %}bg-white/10 text-[#57ffa8] border border-[#57ffa8]/30 font-bold{% else %}text-slate-300 hover:text-white hover:bg-white/5{% endif %}">
                         <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
                         <span>เลือกโต๊ะ</span>
                     </a>
-                    <a href="{{ url_for('join_table') }}" class="px-3 lg:px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition flex items-center space-x-1.5
+                    <a href="{{ url_for('join_table') }}" class="px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition flex items-center space-x-1.5
                         {% if request.endpoint == 'join_table' %}bg-white/10 text-[#57ffa8] border border-[#57ffa8]/30 font-bold{% else %}text-slate-300 hover:text-white hover:bg-white/5{% endif %}">
                         <i data-lucide="ticket" class="w-3.5 h-3.5"></i>
                         <span>เข้าร่วมโต๊ะ</span>
                     </a>
+
                 {% else %}
-                    <a href="{{ url_for('tables') }}" class="px-3 lg:px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition flex items-center space-x-1.5
+                    {# === ADMIN / STAFF NAV === #}
+                    <a href="{{ url_for('tables') }}" class="px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition flex items-center space-x-1.5
                         {% if request.endpoint == 'tables' %}bg-white/10 text-[#57ffa8] border border-[#57ffa8]/30 font-bold{% else %}text-slate-300 hover:text-white hover:bg-white/5{% endif %}">
                         <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
                         <span>ผังโต๊ะ</span>
                     </a>
-                    <a href="{{ url_for('kds') }}" class="px-3 lg:px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition flex items-center space-x-1.5
+
+                    <a href="{{ url_for('kds') }}" class="px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition flex items-center space-x-1.5
                         {% if request.endpoint == 'kds' %}bg-white/10 text-[#57ffa8] border border-[#57ffa8]/30 font-bold{% else %}text-slate-300 hover:text-white hover:bg-white/5{% endif %}">
                         <i data-lucide="chef-hat" class="w-3.5 h-3.5"></i>
                         <span>ครัว (KDS)</span>
                     </a>
-                    <a href="{{ url_for('dashboard') }}" class="px-3 lg:px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition flex items-center space-x-1.5
+                    <a href="{{ url_for('dashboard') }}" class="px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition flex items-center space-x-1.5
                         {% if request.endpoint == 'dashboard' %}bg-white/10 text-[#57ffa8] border border-[#57ffa8]/30 font-bold{% else %}text-slate-300 hover:text-white hover:bg-white/5{% endif %}">
                         <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i>
                         <span>Dashboard</span>
                     </a>
+
                     {% if current_user.role == 'admin' %}
-                    <a href="{{ url_for('menus_page') }}" class="px-3 lg:px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition flex items-center space-x-1.5
+                    <a href="{{ url_for('menus_page') }}" class="px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition flex items-center space-x-1.5
                         {% if request.endpoint in ['menus_page', 'menus_create', 'menus_update', 'menus_delete', 'menus_toggle'] %}bg-white/10 text-[#57ffa8] border border-[#57ffa8]/30 font-bold{% else %}text-slate-300 hover:text-white hover:bg-white/5{% endif %}">
                         <i data-lucide="utensils" class="w-3.5 h-3.5"></i>
                         <span>จัดการเมนู</span>
                     </a>
-                    <a href="{{ url_for('logs') }}" class="px-3 lg:px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition flex items-center space-x-1.5
+                    <a href="{{ url_for('logs') }}" class="px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition flex items-center space-x-1.5
                         {% if request.endpoint == 'logs' %}bg-white/10 text-[#57ffa8] border border-[#57ffa8]/30 font-bold{% else %}text-slate-300 hover:text-white hover:bg-white/5{% endif %}">
                         <i data-lucide="scroll-text" class="w-3.5 h-3.5"></i>
                         <span>Audit Log</span>
@@ -98,92 +99,21 @@
                 {% endif %}
             </nav>
 
-            <!-- Right side: User info + Hamburger (mobile) -->
-            <div class="flex items-center space-x-2 flex-shrink-0">
+            <div class="flex items-center space-x-3">
                 <div class="text-right hidden sm:block">
                     <div class="text-xs font-bold text-white leading-none font-heading">{{ current_user.name or current_user.username }}</div>
                     <span class="text-[9px] uppercase tracking-widest font-mono text-[#57ffa8] font-bold">{{ current_user.role }}</span>
                 </div>
-
-                <!-- Hamburger (mobile only) -->
-                <button type="button" onclick="toggleMobileMenu()"
-                    class="md:hidden w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 flex items-center justify-center transition"
-                    title="เมนู">
-                    <i data-lucide="menu" id="hamburgerIcon" class="w-4 h-4"></i>
-                </button>
-
-                <a href="{{ url_for('logout') }}" class="w-9 h-9 rounded-full bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-white/10 flex items-center justify-center transition" title="ออกจากระบบ">
-                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                <a href="{{ url_for('logout') }}" class="w-8 h-8 rounded-full bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-white/10 flex items-center justify-center transition" title="ออกจากระบบ">
+                    <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
                 </a>
             </div>
+            {% endif %}
         </div>
-
-        <!-- Mobile Menu Dropdown -->
-        {% if current_user.username %}
-        <div id="mobileMenu" class="hidden md:hidden mt-2 glass-hero rounded-3xl p-4 border border-white/10 shadow-2xl">
-            <div class="flex items-center gap-3 pb-3 mb-3 border-b border-white/10">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-[#57ffa8] to-[#a78bfa] text-slate-950 flex items-center justify-center font-black">
-                    {{ (current_user.name or current_user.username)[:1]|upper }}
-                </div>
-                <div>
-                    <div class="text-sm font-bold text-white">{{ current_user.name or current_user.username }}</div>
-                    <div class="text-[10px] uppercase tracking-widest font-mono text-[#57ffa8] font-bold">{{ current_user.role }}</div>
-                </div>
-            </div>
-
-            <nav class="space-y-1">
-                {% if current_user.role == 'customer' %}
-                    <a href="{{ url_for('my_table') }}" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition
-                        {% if request.endpoint == 'my_table' %}bg-[#57ffa8]/15 text-[#57ffa8] border border-[#57ffa8]/30{% else %}text-slate-300 hover:bg-white/5{% endif %}">
-                        <i data-lucide="armchair" class="w-4 h-4"></i>
-                        <span>โต๊ะของฉัน</span>
-                    </a>
-                    <a href="{{ url_for('select_table') }}" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition
-                        {% if request.endpoint == 'select_table' %}bg-[#57ffa8]/15 text-[#57ffa8] border border-[#57ffa8]/30{% else %}text-slate-300 hover:bg-white/5{% endif %}">
-                        <i data-lucide="layout-grid" class="w-4 h-4"></i>
-                        <span>เลือกโต๊ะ</span>
-                    </a>
-                    <a href="{{ url_for('join_table') }}" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition
-                        {% if request.endpoint == 'join_table' %}bg-[#57ffa8]/15 text-[#57ffa8] border border-[#57ffa8]/30{% else %}text-slate-300 hover:bg-white/5{% endif %}">
-                        <i data-lucide="ticket" class="w-4 h-4"></i>
-                        <span>เข้าร่วมโต๊ะ</span>
-                    </a>
-                {% else %}
-                    <a href="{{ url_for('tables') }}" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition
-                        {% if request.endpoint == 'tables' %}bg-[#57ffa8]/15 text-[#57ffa8] border border-[#57ffa8]/30{% else %}text-slate-300 hover:bg-white/5{% endif %}">
-                        <i data-lucide="layout-grid" class="w-4 h-4"></i>
-                        <span>ผังโต๊ะ</span>
-                    </a>
-                    <a href="{{ url_for('kds') }}" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition
-                        {% if request.endpoint == 'kds' %}bg-[#57ffa8]/15 text-[#57ffa8] border border-[#57ffa8]/30{% else %}text-slate-300 hover:bg-white/5{% endif %}">
-                        <i data-lucide="chef-hat" class="w-4 h-4"></i>
-                        <span>ครัว (KDS)</span>
-                    </a>
-                    <a href="{{ url_for('dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition
-                        {% if request.endpoint == 'dashboard' %}bg-[#57ffa8]/15 text-[#57ffa8] border border-[#57ffa8]/30{% else %}text-slate-300 hover:bg-white/5{% endif %}">
-                        <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
-                        <span>Dashboard</span>
-                    </a>
-                    {% if current_user.role == 'admin' %}
-                    <a href="{{ url_for('menus_page') }}" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition
-                        {% if request.endpoint in ['menus_page', 'menus_create', 'menus_update', 'menus_delete', 'menus_toggle'] %}bg-[#57ffa8]/15 text-[#57ffa8] border border-[#57ffa8]/30{% else %}text-slate-300 hover:bg-white/5{% endif %}">
-                        <i data-lucide="utensils" class="w-4 h-4"></i>
-                        <span>จัดการเมนู</span>
-                    </a>
-                    <a href="{{ url_for('logs') }}" class="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition
-                        {% if request.endpoint == 'logs' %}bg-[#57ffa8]/15 text-[#57ffa8] border border-[#57ffa8]/30{% else %}text-slate-300 hover:bg-white/5{% endif %}">
-                        <i data-lucide="scroll-text" class="w-4 h-4"></i>
-                        <span>Audit Log</span>
-                    </a>
-                    {% endif %}
-                {% endif %}
-            </nav>
-        </div>
-        {% endif %}
     </header>
 
-    <!-- Main Content -->
-    <main class="flex-1 max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6 w-full">
+    <main class="flex-1 max-w-7xl mx-auto px-4 py-6 w-full">
+        <!-- Flash messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <div class="space-y-2 mb-4 max-w-3xl mx-auto">
@@ -211,45 +141,22 @@
 
     <script>
         lucide.createIcons();
-
-        // Mobile Menu Toggle
-        function toggleMobileMenu() {
-            const menu = document.getElementById('mobileMenu');
-            const icon = document.getElementById('hamburgerIcon');
-            if (!menu) return;
-
-            if (menu.classList.contains('hidden')) {
-                menu.classList.remove('hidden');
-                if (icon) icon.setAttribute('data-lucide', 'x');
-            } else {
-                menu.classList.add('hidden');
-                if (icon) icon.setAttribute('data-lucide', 'menu');
-            }
-            lucide.createIcons();
-        }
-
-        // ปิด menu เมื่อคลิกลิงก์
-        document.querySelectorAll('#mobileMenu a').forEach(link => {
-            link.addEventListener('click', () => {
-                const menu = document.getElementById('mobileMenu');
-                const icon = document.getElementById('hamburgerIcon');
-                if (menu) menu.classList.add('hidden');
-                if (icon) icon.setAttribute('data-lucide', 'menu');
-                lucide.createIcons();
-            });
-        });
     </script>
 
+    <!-- ============================================================ -->
     <!-- CSRF: Inject token ให้ทุก POST form อัตโนมัติ -->
+    <!-- ============================================================ -->
     <script>
         (function() {
             const CSRF_TOKEN = "{{ csrf_token() }}";
+
             function injectCsrfToForms() {
                 if (!CSRF_TOKEN) return;
                 document.querySelectorAll('form').forEach(function(form) {
                     const method = (form.getAttribute('method') || 'GET').toUpperCase();
                     if (method !== 'POST') return;
                     if (form.querySelector('input[name="_csrf"]')) return;
+
                     const input = document.createElement('input');
                     input.type = 'hidden';
                     input.name = '_csrf';
@@ -257,11 +164,14 @@
                     form.appendChild(input);
                 });
             }
+
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', injectCsrfToForms);
             } else {
                 injectCsrfToForms();
             }
+
+            // เรียกซ้ำเมื่อมี modal เปิด (บางกรณี form ถูกสร้างใหม่)
             window.injectCsrfToForms = injectCsrfToForms;
         })();
     </script>
