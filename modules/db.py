@@ -5,145 +5,134 @@ modules/db.py
 ทุกฟังก์ชันถูกครอบ try...except เพื่อไม่ให้เกิด Unhandled Exception
 
 SECURITY:
-- ป้องกัน Path Traversal (ห้ามใช้ .., /, \, absolute path)
-- Atomic write (เขียนไฟล์ชั่วคราวก่อน rename ทับ)
-- จำกัดเฉพาะ .json ที่อยู่ใต้ data/ เท่านั้น
+- ป้องกัน Path Traversal (ห้าม .., /, \\)
+- Atomic write
+
+DEPLOYMENT:
+- Local: เขียนที่ data/
+- Vercel: เขียนที่ /tmp/kitchen_os_data (เพราะ Vercel read-only)
 """
 
 import json
 import os
 import re
+import shutil
 from typing import Any, Optional
 
 # ---------------------------------------------------------------
-# Path ของโฟลเดอร์ data/
+# Path
 # ---------------------------------------------------------------
 _THIS_DIR: str = os.path.dirname(os.path.abspath(__file__))
 _PROJECT_ROOT: str = os.path.dirname(_THIS_DIR)
-DATA_DIR: str = os.path.join(_PROJECT_ROOT, "data")
+_ORIGINAL_DATA_DIR: str = os.path.join(_PROJECT_ROOT, "data")
 
-# ชื่อไฟล์ที่อนุญาต: ตัวอักษร ตัวเลข _ - . เท่านั้น + ต้องลงท้าย .json
 _ALLOWED_FILENAME_PATTERN = re.compile(r"^[A-Za-z0-9_\-]+\.json$")
 
 
+def _setup_data_dir() -> str:
+    """
+    จัดการ DATA_DIR ให้เขียนได้ทั้ง local และ Vercel
+    - Local: ใช้ data/ ปกติ
+    - Vercel: ใช้ /tmp/kitchen_os_data + copy seed data ไป /tmp ครั้งแรก
+    """
+    is_vercel: bool = (
+        os.environ.get("VERCEL") == "1"
+        or os.environ.get("VERCEL_ENV") is not None
+        or os.environ.get("NOW_REGION") is not None
+    )
+
+    if not is_vercel:
+        return _ORIGINAL_DATA_DIR
+
+    tmp_data_dir: str = "/tmp/kitchen_os_data"
+    try:
+        if not os.path.exists(tmp_data_dir):
+            os.makedirs(tmp_data_dir, exist_ok=True)
+
+            if os.path.exists(_ORIGINAL_DATA_DIR):
+                for filename in os.listdir(_ORIGINAL_DATA_DIR):
+                    if filename.endswith(".json"):
+                        src: str = os.path.join(_ORIGINAL_DATA_DIR, filename)
+                        dst: str = os.path.join(tmp_data_dir, filename)
+                        try:
+                            shutil.copy(src, dst)
+                        except Exception:
+                            pass
+        return tmp_data_dir
+    except Exception:
+        return _ORIGINAL_DATA_DIR
+
+
+DATA_DIR: str = _setup_data_dir()
+
+
 def _is_safe_filename(filename: str) -> bool:
-    """
-    ตรวจสอบชื่อไฟล์ว่าปลอดภัยหรือไม่
-    - ต้องเป็น string ที่ไม่ว่าง
-    - ต้องไม่มี .. / \\ (path traversal)
-    - ต้องไม่มี absolute path (ขึ้นต้นด้วย / หรือ drive letter)
-    - ต้องตรงกับ pattern: [A-Za-z0-9_-]+.json
-    """
+    """ตรวจสอบชื่อไฟล์ว่าปลอดภัยหรือไม่"""
     try:
         if not isinstance(filename, str):
             return False
-
         name = filename.strip()
         if not name:
             return False
-
-        # ปฏิเสธ path traversal patterns
         if ".." in name or "/" in name or "\\" in name:
             return False
-
-        # ปฏิเสธ absolute path (Windows drive หรือ Unix absolute)
         if name.startswith("/") or name.startswith("\\"):
             return False
         if len(name) >= 2 and name[1] == ":":
             return False
-
-        # ปฏิเสธ null byte
         if "\x00" in name:
             return False
-
-        # ต้องตรง pattern .json ที่อนุญาต
         if not _ALLOWED_FILENAME_PATTERN.match(name):
             return False
-
         return True
-
     except Exception:
         return False
 
 
 def _get_safe_filepath(filename: str) -> Optional[str]:
-    """
-    คืน filepath เต็มที่ปลอดภัย หรือ None ถ้าไม่ผ่าน validation
-    ตรวจสอบเพิ่มเติมว่า path ที่ได้ต้องอยู่ใต้ DATA_DIR จริง
-    """
+    """คืน filepath ที่ปลอดภัย หรือ None ถ้าไม่ผ่าน"""
     try:
         if not _is_safe_filename(filename):
             return None
-
         filepath = os.path.abspath(os.path.join(DATA_DIR, filename))
         data_dir_abs = os.path.abspath(DATA_DIR)
-
-        # path ต้องอยู่ใต้ DATA_DIR (ใช้ commonpath ป้องกัน symlink games)
         try:
             common = os.path.commonpath([filepath, data_dir_abs])
         except ValueError:
-            # ต่าง drive / invalid path
             return None
-
         if common != data_dir_abs:
             return None
-
         return filepath
-
     except Exception:
         return None
 
 
 def load_json(filename: str, default: Optional[Any] = None) -> Any:
-    """
-    โหลดข้อมูลจากไฟล์ data/{filename}
-
-    Args:
-        filename: ชื่อไฟล์ เช่น "users.json" (ห้ามมี path)
-        default: ค่าที่จะคืนกลับหากโหลดไม่สำเร็จ (ถ้าไม่ระบุจะใช้ [])
-
-    Returns:
-        Any: ข้อมูลที่โหลดได้ หรือค่า default ถ้าเกิดข้อผิดพลาด
-    """
+    """โหลดข้อมูลจากไฟล์ data/{filename}"""
     if default is None:
         default = []
 
     try:
         filepath = _get_safe_filepath(filename)
         if filepath is None:
-            # filename ไม่ปลอดภัย → ปฏิเสธ
             return default
-
         if not os.path.exists(filepath):
             return default
 
         with open(filepath, "r", encoding="utf-8") as f:
             data = json.load(f)
 
-        # คืนค่าตามชนิดของ default ที่ผู้ใช้ต้องการ
         if isinstance(default, list) and not isinstance(data, list):
             return default
         if isinstance(default, dict) and not isinstance(data, dict):
             return default
-
         return data
-
     except Exception:
         return default
 
 
 def save_json(filename: str, data: Any) -> bool:
-    """
-    บันทึกข้อมูลลงไฟล์ data/{filename} แบบ atomic write
-    (เขียนไฟล์ชั่วคราวก่อนแล้วค่อย rename ทับ เพื่อป้องกันไฟล์เสียหาย)
-
-    Args:
-        filename: ชื่อไฟล์ปลายทาง (ห้ามมี path)
-        data: ข้อมูลที่ต้องการบันทึก (ต้อง JSON serializable)
-
-    Returns:
-        bool: True ถ้าบันทึกสำเร็จ, False ถ้าไม่สำเร็จ
-    """
+    """บันทึกข้อมูลลงไฟล์ data/{filename} แบบ atomic write"""
     try:
         filepath = _get_safe_filepath(filename)
         if filepath is None:
@@ -157,9 +146,7 @@ def save_json(filename: str, data: Any) -> bool:
 
         os.replace(tmp_path, filepath)
         return True
-
     except Exception:
-        # พยายามลบไฟล์ชั่วคราวทิ้ง
         try:
             if "tmp_path" in locals() and os.path.exists(tmp_path):
                 os.remove(tmp_path)
