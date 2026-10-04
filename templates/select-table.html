@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}{% if is_change_mode %}เปลี่ยนโต๊ะ{% else %}เลือกโต๊ะ{% endif %} - KITCHEN OS{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 glass-hero p-6 sm:p-8 rounded-3xl border border-white/10">
+        <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#57ffa8]/10 border border-[#57ffa8]/30 text-[#57ffa8] text-xs font-bold tracking-wide mb-3">
+                <i data-lucide="armchair" class="w-3.5 h-3.5"></i>
+                <span>{% if is_change_mode %}CHANGE TABLE{% else %}SELECT YOUR TABLE{% endif %}</span>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-black text-white font-heading tracking-tight">
+                {% if is_change_mode %}ย้ายไปโต๊ะใหม่{% else %}เลือกโต๊ะของคุณ{% endif %}
+            </h1>
+            <p class="text-slate-400 text-xs sm:text-sm mt-1">
+                {% if is_change_mode %}
+                    เลือกโต๊ะใหม่ — ออเดอร์ที่ยังไม่เสิร์ฟจะย้ายตามไปด้วย
+                {% else %}
+                    กรุณาเลือกโต๊ะที่คุณนั่งอยู่ เพื่อเริ่มสั่งอาหาร
+                {% endif %}
+            </p>
+        </div>
+
+        {% if is_change_mode and current_table %}
+        <div class="text-right">
+            <span class="text-[10px] uppercase font-mono tracking-widest text-slate-400">TO๊ะปัจจุบัน</span>
+            <div class="text-2xl font-black text-white font-heading">#{{ current_table.table_number }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- คำแนะนำ -->
+    {% if not is_change_mode %}
+    <div class="glass-hero p-5 rounded-3xl border border-blue-500/30 bg-blue-500/5">
+        <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded-full bg-blue-500/20 text-blue-300 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="info" class="w-4 h-4"></i>
+            </div>
+            <div class="text-xs text-slate-300 space-y-1">
+                <p class="font-bold text-blue-300">วิธีใช้งาน</p>
+                <p>• กดปุ่ม "เลือกโต๊ะนี้" ที่โต๊ะที่คุณนั่ง → คุณจะกลายเป็นเจ้าของโต๊ะ</p>
+                <p>• เพื่อนที่มาด้วยกันสามารถ "เข้าร่วมโต๊ะ" ด้วยรหัสเชิญที่คุณแชร์ได้</p>
+                <p>• <span class="text-amber-300 font-bold">โต๊ะที่มีคนนั่งอยู่แล้ว</span> จะไม่สามารถเลือกได้ ถ้าไม่ใช่โต๊ะของคุณ</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Grid โต๊ะ -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        {% for table in tables %}
+        <div class="glass-hero rounded-3xl p-6 border transition duration-200 hover:border-white/30
+            {% if table.status == 'available' %}border-[#57ffa8]/30
+            {% else %}border-amber-500/30{% endif %}">
+
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <span class="text-[11px] uppercase font-bold tracking-widest text-slate-400 font-mono">TABLE</span>
+                    <div class="text-4xl font-black font-heading text-white tracking-tight">#{{ table.table_number }}</div>
+                </div>
+
+                {% if table.status == 'available' %}
+                <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-[#57ffa8]/10 text-[#57ffa8] border border-[#57ffa8]/40 flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#57ffa8]"></span>
+                    ว่าง
+                </span>
+                {% elif table.status == 'occupied' %}
+                <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-300 border border-amber-500/40 flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                    มีลูกค้า
+                </span>
+                {% endif %}
+            </div>
+
+            <div class="flex items-center justify-between text-xs text-slate-300 py-3 border-y border-white/5 mb-5">
+                <span class="flex items-center gap-1.5 text-white font-medium">
+                    <i data-lucide="users" class="w-4 h-4 text-slate-400"></i>
+                    <span>{{ table.seats }} ที่นั่ง</span>
+                </span>
+                {% if table.members and table.members|length > 0 %}
+                <span class="text-[10px] text-amber-300 font-mono">{{ table.members|length }} คน</span>
+                {% endif %}
+            </div>
+
+            <form action="{{ url_for('my_table_change') if is_change_mode else url_for('select_table') }}" method="POST">
+                <input type="hidden" name="table_id" value="{{ table.id }}">
+                <input type="hidden" name="new_table_id" value="{{ table.id }}">
+
+                {% if table.status == 'available' %}
+                <button type="submit"
+                    class="w-full py-3 rounded-2xl text-xs font-black bg-[#57ffa8] hover:bg-[#43e693] text-slate-950 transition flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(87,255,168,0.25)]">
+                    <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                    <span>{% if is_change_mode %}ย้ายมาโต๊ะนี้{% else %}เลือกโต๊ะนี้{% endif %}</span>
+                </button>
+                {% else %}
+                <button type="button" disabled
+                    class="w-full py-3 rounded-2xl text-xs font-bold bg-white/5 text-slate-500 cursor-not-allowed border border-white/5 flex items-center justify-center gap-2">
+                    <i data-lucide="lock" class="w-4 h-4"></i>
+                    <span>ไม่ว่าง (มีลูกค้าแล้ว)</span>
+                </button>
+                {% endif %}
+            </form>
+        </div>
+        {% else %}
+        <div class="col-span-full glass-hero p-16 rounded-3xl text-center border border-white/10">
+            <i data-lucide="armchair" class="w-12 h-12 mx-auto mb-3 text-slate-600"></i>
+            <h3 class="text-lg font-bold text-white">ไม่มีโต๊ะว่างในขณะนี้</h3>
+            <p class="text-xs text-slate-500 mt-1">กรุณารอสักครู่ หรือติดต่อพนักงาน</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- ปุ่มเปลี่ยนใจ (เฉพาะโหมด change) -->
+    {% if is_change_mode %}
+    <div class="text-center">
+        <a href="{{ url_for('my_table') }}"
+            class="inline-flex items-center gap-2 px-5 py-3 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white rounded-2xl text-xs font-bold transition border border-white/10">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <span>ยกเลิก — กลับไปโต๊ะเดิม</span>
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

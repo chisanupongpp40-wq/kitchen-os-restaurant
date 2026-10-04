@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% block title %}Dashboard รายงานสรุปยอดขาย - KITCHEN OS{% endblock %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- ฝากข้อมูล JSON ไว้ในแท็ก script พิเศษ เพื่อไม่ให้ JS Linter ฟ้อง Error -->
+<script id="top-menus-data" type="application/json">
+    {{ stats.top_menus|tojson }}
+</script>
+
+<div class="space-y-8">
+
+    <!-- Header หน้า Dashboard -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 glass-hero p-6 sm:p-8 rounded-3xl border border-white/10">
+        <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#57ffa8]/10 border border-[#57ffa8]/30 text-[#57ffa8] text-xs font-bold tracking-wide mb-3">
+                <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i>
+                <span>SALES & ANALYTICS REPORT</span>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-black text-white font-heading tracking-tight">
+                Executive Dashboard
+            </h1>
+            <p class="text-slate-400 text-xs sm:text-sm mt-1">รายงานสรุปผลประกอบการรายวัน ยอดขายสะสม และจัดอันดับเมนูยอดนิยม</p>
+        </div>
+        <div class="text-right">
+            <span class="text-[10px] uppercase font-mono tracking-widest text-slate-400">REPORT DATE</span>
+            <div class="text-sm font-bold text-white font-mono">{{ stats.today_date }}</div>
+        </div>
+    </div>
+
+    <!-- การ์ดตัวเลขสถิติ 4 ใบ -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="glass-hero p-6 rounded-3xl border border-[#57ffa8]/30">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-bold font-mono uppercase mb-2">
+                <span>ยอดขายวันนี้ (TODAY)</span>
+                <i data-lucide="wallet" class="w-4 h-4 text-[#57ffa8]"></i>
+            </div>
+            <div class="text-3xl font-black text-white font-mono tracking-tight">฿{{ "%.2f"|format(stats.today_sales) }}</div>
+            <div class="text-[11px] text-[#57ffa8] mt-2 flex items-center gap-1">
+                <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>
+                <span>คำนวณจากบิลวันนี้</span>
+            </div>
+        </div>
+
+        <div class="glass-hero p-6 rounded-3xl border border-[#a78bfa]/30">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-bold font-mono uppercase mb-2">
+                <span>ยอดขายสะสม (ALL TIME)</span>
+                <i data-lucide="dollar-sign" class="w-4 h-4 text-[#a78bfa]"></i>
+            </div>
+            <div class="text-3xl font-black text-white font-mono tracking-tight">฿{{ "%.2f"|format(stats.total_sales) }}</div>
+            <div class="text-[11px] text-[#a78bfa] mt-2 flex items-center gap-1">
+                <i data-lucide="database" class="w-3.5 h-3.5"></i>
+                <span>จากประวัติบิลทั้งหมด</span>
+            </div>
+        </div>
+
+        <div class="glass-hero p-6 rounded-3xl border border-white/10">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-bold font-mono uppercase mb-2">
+                <span>บิลที่เช็ควันนี้</span>
+                <i data-lucide="receipt" class="w-4 h-4 text-amber-400"></i>
+            </div>
+            <div class="text-3xl font-black text-white font-mono tracking-tight">{{ stats.today_bills }} <span class="text-sm font-normal text-slate-400">บิล</span></div>
+            <div class="text-[11px] text-slate-400 mt-2">ยอดออเดอร์ที่ชำระเงินแล้ว</div>
+        </div>
+
+        <div class="glass-hero p-6 rounded-3xl border border-white/10">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-bold font-mono uppercase mb-2">
+                <span>บิลสะสมทั้งหมด</span>
+                <i data-lucide="files" class="w-4 h-4 text-blue-400"></i>
+            </div>
+            <div class="text-3xl font-black text-white font-mono tracking-tight">{{ stats.total_bills }} <span class="text-sm font-normal text-slate-400">บิล</span></div>
+            <div class="text-[11px] text-slate-400 mt-2">ประวัติธุรกรรมในระบบ</div>
+        </div>
+    </div>
+
+    <!-- ส่วนกราฟ & อันดับเมนูขายดี -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <div class="lg:col-span-2 glass-hero p-6 sm:p-8 rounded-3xl border border-white/10 space-y-4">
+            <div class="flex items-center justify-between pb-4 border-b border-white/10">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="trending-up" class="w-5 h-5 text-[#57ffa8]"></i>
+                    <h3 class="text-lg font-black text-white font-heading">กราฟอันดับเมนูขายดี (Top Best Sellers)</h3>
+                </div>
+                <span class="text-xs text-slate-400 font-mono">จำนวนจานที่สั่ง</span>
+            </div>
+            <div class="h-64 sm:h-72 w-full pt-2">
+                <canvas id="topMenusChart"></canvas>
+            </div>
+        </div>
+
+        <div class="glass-hero p-6 rounded-3xl border border-white/10 space-y-4">
+            <div class="flex items-center gap-2 pb-4 border-b border-white/10">
+                <i data-lucide="crown" class="w-5 h-5 text-amber-400"></i>
+                <h3 class="text-lg font-black text-white font-heading">5 เมนูขายดีที่สุด</h3>
+            </div>
+
+            <div class="space-y-3">
+                {% for menu in stats.top_menus %}
+                <div class="flex items-center justify-between p-3.5 bg-slate-900/80 rounded-2xl border border-white/5">
+                    <div class="flex items-center gap-3">
+                        <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black font-mono
+                            {% if loop.index == 1 %}bg-amber-400 text-slate-950
+                            {% elif loop.index == 2 %}bg-slate-300 text-slate-950
+                            {% elif loop.index == 3 %}bg-amber-700 text-white
+                            {% else %}bg-slate-800 text-slate-400{% endif %}">
+                            {{ loop.index }}
+                        </span>
+                        <div>
+                            <div class="text-xs font-bold text-white leading-tight">{{ menu.name }}</div>
+                            <span class="text-[10px] text-slate-500 font-mono">ID: {{ menu.menu_id }}</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-sm font-black text-[#57ffa8] font-mono">{{ menu.qty }}</span>
+                        <span class="text-[10px] text-slate-400 ml-0.5">จาน</span>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center py-10 text-slate-500 text-xs">
+                    ยังไม่มีข้อมูลการขายสำหรับจัดอันดับ
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const dataElem = document.getElementById('top-menus-data');
+    let topMenusData = [];
+    try {
+        topMenusData = JSON.parse(dataElem ? dataElem.textContent : '[]');
+    } catch (e) {
+        topMenusData = [];
+    }
+    
+    if (topMenusData && topMenusData.length > 0) {
+        const labels = topMenusData.map(item => item.name);
+        const dataValues = topMenusData.map(item => item.qty);
+
+        const ctx = document.getElementById('topMenusChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'จำนวนที่สั่ง (จาน)',
+                    data: dataValues,
+                    backgroundColor: [
+                        'rgba(87, 255, 168, 0.8)',
+                        'rgba(167, 139, 250, 0.8)',
+                        'rgba(56, 189, 248, 0.8)',
+                        'rgba(251, 191, 36, 0.8)',
+                        'rgba(244, 63, 94, 0.8)'
+                    ],
+                    borderColor: ['#57ffa8', '#a78bfa', '#38bdf8', '#fbbf24', '#f43f5e'],
+                    borderWidth: 1.5,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#94a3b8' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#f8fafc', font: { weight: '600' } }
+                    }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

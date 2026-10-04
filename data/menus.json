@@ -1,0 +1,82 @@
+[
+  {
+    "id": "M001",
+    "name": "ข้าวผัดกุ้ง",
+    "category": "จานหลัก",
+    "price": 120.0,
+    "is_available": false,
+    "image_url": "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    "id": "M002",
+    "name": "ต้มยำกุ้ง",
+    "category": "จานหลัก",
+    "price": 180.0,
+    "is_available": true,
+    "image_url": "https://images.unsplash.com/photo-1548943487-a2e4e43b4853?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    "id": "M003",
+    "name": "ผัดไทย",
+    "category": "จานหลัก",
+    "price": 100.0,
+    "is_available": true,
+    "image_url": "https://images.unsplash.com/photo-1559314809-0d155014e29e?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    "id": "M004",
+    "name": "ปีกไก่ทอด",
+    "category": "ทานเล่น",
+    "price": 90.0,
+    "is_available": true,
+    "image_url": "https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    "id": "M005",
+    "name": "ปอเปี๊ยะทอด",
+    "category": "ทานเล่น",
+    "price": 80.0,
+    "is_available": true,
+    "image_url": "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    "id": "M006",
+    "name": "สลัดผลไม้",
+    "category": "ทานเล่น",
+    "price": 110.0,
+    "is_available": false,
+    "image_url": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    "id": "M007",
+    "name": "น้ำมะนาว",
+    "category": "เครื่องดื่ม",
+    "price": 45.0,
+    "is_available": true,
+    "image_url": "https://images.unsplash.com/photo-1497534446932-c925b458314e?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    "id": "M008",
+    "name": "ชาไทย",
+    "category": "เครื่องดื่ม",
+    "price": 50.0,
+    "is_available": true,
+    "image_url": "https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    "id": "M009",
+    "name": "ข้าวเหนียวมะม่วง",
+    "category": "ของหวาน",
+    "price": 120.0,
+    "is_available": true,
+    "image_url": "https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=400&q=80"
+  },
+  {
+    "id": "M010",
+    "name": "ไอศกรีมกะทิ",
+    "category": "ของหวาน",
+    "price": 60.0,
+    "is_available": true,
+    "image_url": "https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=400&q=80"
+  }
+]

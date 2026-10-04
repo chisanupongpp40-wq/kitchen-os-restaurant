@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}หน้าจอครัว (KDS) - KITCHEN OS{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header สรุปสถานะหน้าจอครัว -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 glass-hero p-6 rounded-3xl border border-white/10">
+        <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold tracking-wide mb-2">
+                <i data-lucide="flame" class="w-3.5 h-3.5"></i>
+                <span>KITCHEN DISPLAY SYSTEM (KDS)</span>
+            </div>
+            <h1 class="text-3xl font-black text-white font-heading tracking-tight">
+                รายการออเดอร์ในครัว
+            </h1>
+            <p class="text-slate-400 text-xs mt-0.5">เรียงลำดับตามเวลาสั่งก่อน-หลัง (FIFO) พ่อครัวกดเปลี่ยนสถานะเพื่อแจ้งพนักงานเสิร์ฟ</p>
+        </div>
+
+        <!-- ตัวนับสถานะออเดอร์ -->
+        <div class="flex items-center gap-3">
+            <div class="px-5 py-2.5 rounded-2xl glass-hero border border-amber-500/30 text-center min-w-[85px]">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-amber-400">รอทำ (Pending)</div>
+                <div class="text-2xl font-black font-heading text-white">{{ counts.pending or 0 }}</div>
+            </div>
+            <div class="px-5 py-2.5 rounded-2xl glass-hero border border-blue-500/30 text-center min-w-[85px]">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-blue-400">กำลังปรุง (Cooking)</div>
+                <div class="text-2xl font-black font-heading text-white">{{ counts.cooking or 0 }}</div>
+            </div>
+            <button onclick="location.reload()" class="p-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-2xl transition" title="รีเฟรชออเดอร์">
+                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- กริดแสดงการ์ดออเดอร์ในครัว -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for order in orders %}
+        <div class="glass-hero rounded-3xl p-6 border flex flex-col justify-between space-y-4 transition duration-200
+            {% if order.status == 'pending' %}border-amber-500/40 shadow-[0_0_20px_rgba(245,158,11,0.1)]
+            {% elif order.status == 'cooking' %}border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.1)]
+            {% else %}border-white/10{% endif %}">
+            
+            <div>
+                <!-- หัวการ์ด: เลขโต๊ะ + เวลาสั่ง -->
+                <div class="flex items-start justify-between pb-4 border-b border-white/10">
+                    <div>
+                        <div class="text-2xl font-black text-white font-heading tracking-tight flex items-center gap-2">
+                            <span>โต๊ะ #{{ order.table_number }}</span>
+                            <span class="text-xs font-mono font-bold text-slate-400">({{ order.id }})</span>
+                        </div>
+                        <div class="text-[11px] text-slate-400 flex items-center gap-1 mt-1 font-mono">
+                            <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-400"></i>
+                            <span>{{ order.created_at[11:19] if order.created_at|length >= 19 else order.created_at }} น.</span>
+                        </div>
+                    </div>
+
+                    <!-- Badge สถานะในครัว -->
+                    <span class="px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5
+                        {% if order.status == 'pending' %}bg-amber-500/10 text-amber-300 border-amber-500/30 animate-pulse
+                        {% elif order.status == 'cooking' %}bg-blue-500/10 text-blue-300 border-blue-500/30
+                        {% else %}bg-[#57ffa8]/10 text-[#57ffa8] border-[#57ffa8]/30{% endif %}">
+                        <span class="w-1.5 h-1.5 rounded-full 
+                            {% if order.status == 'pending' %}bg-amber-400
+                            {% elif order.status == 'cooking' %}bg-blue-400
+                            {% else %}bg-[#57ffa8]{% endif %}"></span>
+                        {% if order.status == 'pending' %}รอทำ
+                        {% elif order.status == 'cooking' %}กำลังทำ
+                        {% else %}เสิร์ฟแล้ว{% endif %}
+                    </span>
+                </div>
+
+                <!-- รายการอาหารที่ต้องทำ -->
+                <div class="py-4 space-y-3">
+                    {% for item in (order.get('items') or []) %}
+                    <div class="bg-slate-900/80 p-3 rounded-2xl border border-white/5 flex items-start justify-between">
+                        <div>
+                            <div class="text-sm font-bold text-white flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-lg bg-[#57ffa8]/20 text-[#57ffa8] flex items-center justify-center font-mono font-black text-xs">
+                                    {{ item.quantity }}x
+                                </span>
+                                <span>{{ item.name }}</span>
+                            </div>
+                            {% if item.note %}
+                            <div class="text-[11px] text-amber-300 mt-1 pl-8 font-medium">
+                                ⚠️ โน้ต: {{ item.note }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    {% if order.note %}
+                    <div class="p-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-xs text-amber-200">
+                        <span class="font-bold">หมายเหตุโต๊ะ:</span> {{ order.note }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- ปุ่มเปลี่ยนสถานะสำหรับพ่อครัว -->
+            <div class="pt-4 border-t border-white/10">
+                <form action="{{ url_for('kds_update_status') }}" method="POST" class="flex gap-2">
+                    <input type="hidden" name="order_id" value="{{ order.id }}">
+                    
+                    {% if order.status == 'pending' %}
+                    <input type="hidden" name="status" value="cooking">
+                    <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg transition">
+                        <i data-lucide="chef-hat" class="w-4 h-4"></i>
+                        <span>เริ่มปรุงอาหาร (Start Cooking)</span>
+                    </button>
+                    {% elif order.status == 'cooking' %}
+                    <input type="hidden" name="status" value="served">
+                    <button type="submit" class="w-full py-3 bg-[#57ffa8] hover:bg-[#43e693] text-slate-950 font-black rounded-2xl text-xs flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(87,255,168,0.25)] transition">
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                        <span>ปรุงเสร็จแล้ว / พร้อมเสิร์ฟ</span>
+                    </button>
+                    {% endif %}
+                </form>
+            </div>
+
+        </div>
+        {% else %}
+        <div class="col-span-full glass-hero p-16 rounded-3xl text-center text-slate-400 border border-white/10 space-y-2">
+            <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mx-auto text-slate-500 mb-3">
+                <i data-lucide="check-circle" class="w-6 h-6 text-[#57ffa8]"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white">ไม่มีออเดอร์ค้างในครัว</h3>
+            <p class="text-xs text-slate-500">ออเดอร์ทั้งหมดถูกปรุงและเสิร์ฟเรียบร้อยแล้ว</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

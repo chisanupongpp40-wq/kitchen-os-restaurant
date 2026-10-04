@@ -1,0 +1,442 @@
+[
+  {
+    "id": "LOG001",
+    "timestamp": "2026-10-04T21:46:37",
+    "username": "admin",
+    "role": "admin",
+    "action": "seed_data",
+    "details": "สร้างข้อมูลจำลองเริ่มต้น"
+  },
+  {
+    "id": "LOG002",
+    "timestamp": "2026-10-04T21:47:03",
+    "username": "customer",
+    "role": "customer",
+    "action": "assign_table",
+    "details": "จองโต๊ะ #3 เป็น host"
+  },
+  {
+    "id": "LOG003",
+    "timestamp": "2026-10-04T21:47:08",
+    "username": "customer",
+    "role": "customer",
+    "action": "place_order",
+    "details": "สั่งอาหารโต๊ะ 3 จำนวน 2 รายการ"
+  },
+  {
+    "id": "LOG004",
+    "timestamp": "2026-10-04T21:47:51",
+    "username": "customer",
+    "role": "customer",
+    "action": "request_bill",
+    "details": "ลูกค้าขอเช็คบิลโต๊ะ #3"
+  },
+  {
+    "id": "LOG005",
+    "timestamp": "2026-10-04T21:48:17",
+    "username": "customer",
+    "role": "customer",
+    "action": "logout",
+    "details": "ออกจากระบบ"
+  },
+  {
+    "id": "LOG006",
+    "timestamp": "2026-10-04T21:48:18",
+    "username": "staff",
+    "role": "staff",
+    "action": "login",
+    "details": "เข้าสู่ระบบสำเร็จ"
+  },
+  {
+    "id": "LOG007",
+    "timestamp": "2026-10-04T21:48:47",
+    "username": "staff",
+    "role": "staff",
+    "action": "checkout_bill",
+    "details": "เช็คบิลโต๊ะ 3 ยอด 353.1"
+  },
+  {
+    "id": "LOG008",
+    "timestamp": "2026-10-04T21:53:55",
+    "username": "staff",
+    "role": "staff",
+    "action": "kds_update_status",
+    "details": "อัปเดตออเดอร์ ORD001 เป็น cooking"
+  },
+  {
+    "id": "LOG009",
+    "timestamp": "2026-10-04T21:53:57",
+    "username": "staff",
+    "role": "staff",
+    "action": "kds_update_status",
+    "details": "อัปเดตออเดอร์ ORD001 เป็น served"
+  },
+  {
+    "id": "LOG010",
+    "timestamp": "2026-10-04T21:54:01",
+    "username": "staff",
+    "role": "staff",
+    "action": "place_order",
+    "details": "สั่งอาหารโต๊ะ 3 จำนวน 2 รายการ"
+  },
+  {
+    "id": "LOG011",
+    "timestamp": "2026-10-04T21:54:02",
+    "username": "staff",
+    "role": "staff",
+    "action": "update_table_status",
+    "details": "เปลี่ยนสถานะโต๊ะ 3 เป็น billing"
+  },
+  {
+    "id": "LOG012",
+    "timestamp": "2026-10-04T21:58:11",
+    "username": "staff",
+    "role": "staff",
+    "action": "logout",
+    "details": "ออกจากระบบ"
+  },
+  {
+    "id": "LOG013",
+    "timestamp": "2026-10-04T21:58:13",
+    "username": "customer",
+    "role": "customer",
+    "action": "login",
+    "details": "เข้าสู่ระบบสำเร็จ"
+  },
+  {
+    "id": "LOG014",
+    "timestamp": "2026-10-04T21:58:14",
+    "username": "customer",
+    "role": "customer",
+    "action": "assign_table",
+    "details": "จองโต๊ะ #5 เป็น host"
+  },
+  {
+    "id": "LOG015",
+    "timestamp": "2026-10-04T22:12:05",
+    "username": "customer",
+    "role": "customer",
+    "action": "logout",
+    "details": "ออกจากระบบ"
+  },
+  {
+    "id": "LOG016",
+    "timestamp": "2026-10-04T22:12:06",
+    "username": "customer",
+    "role": "customer",
+    "action": "login",
+    "details": "เข้าสู่ระบบสำเร็จ"
+  },
+  {
+    "id": "LOG017",
+    "timestamp": "2026-10-04T22:15:00",
+    "username": "customer",
+    "role": "customer",
+    "action": "logout",
+    "details": "ออกจากระบบ"
+  },
+  {
+    "id": "LOG018",
+    "timestamp": "2026-10-04T22:15:01",
+    "username": "staff",
+    "role": "staff",
+    "action": "login",
+    "details": "เข้าสู่ระบบสำเร็จ"
+  },
+  {
+    "id": "LOG019",
+    "timestamp": "2026-10-04T22:15:17",
+    "username": "staff",
+    "role": "staff",
+    "action": "update_table_status",
+    "details": "เปลี่ยนสถานะโต๊ะ 5 เป็น billing"
+  },
+  {
+    "id": "LOG020",
+    "timestamp": "2026-10-04T22:17:34",
+    "username": "staff",
+    "role": "staff",
+    "action": "unlock_table",
+    "details": "ปลดล็อกโต๊ะ #3"
+  },
+  {
+    "id": "LOG021",
+    "timestamp": "2026-10-04T22:17:35",
+    "username": "staff",
+    "role": "staff",
+    "action": "unlock_table",
+    "details": "ปลดล็อกโต๊ะ #5"
+  },
+  {
+    "id": "LOG022",
+    "timestamp": "2026-10-04T22:17:37",
+    "username": "staff",
+    "role": "staff",
+    "action": "logout",
+    "details": "ออกจากระบบ"
+  },
+  {
+    "id": "LOG023",
+    "timestamp": "2026-10-04T22:17:40",
+    "username": "customer",
+    "role": "customer",
+    "action": "login",
+    "details": "เข้าสู่ระบบสำเร็จ"
+  },
+  {
+    "id": "LOG024",
+    "timestamp": "2026-10-04T22:18:01",
+    "username": "customer",
+    "role": "customer",
+    "action": "assign_table",
+    "details": "จองโต๊ะ #5 เป็น host"
+  },
+  {
+    "id": "LOG025",
+    "timestamp": "2026-10-04T22:18:32",
+    "username": "customer",
+    "role": "customer",
+    "action": "place_order",
+    "details": "สั่งอาหารโต๊ะ 5 จำนวน 2 รายการ"
+  },
+  {
+    "id": "LOG026",
+    "timestamp": "2026-10-04T22:19:02",
+    "username": "customer",
+    "role": "customer",
+    "action": "change_table",
+    "details": "ย้ายจากโต๊ะ #5 ไป #1 (1 คน)"
+  },
+  {
+    "id": "LOG027",
+    "timestamp": "2026-10-04T22:19:38",
+    "username": "customer",
+    "role": "customer",
+    "action": "logout",
+    "details": "ออกจากระบบ"
+  },
+  {
+    "id": "LOG028",
+    "timestamp": "2026-10-04T22:19:39",
+    "username": "staff",
+    "role": "staff",
+    "action": "login",
+    "details": "เข้าสู่ระบบสำเร็จ"
+  },
+  {
+    "id": "LOG029",
+    "timestamp": "2026-10-04T22:21:32",
+    "username": "staff",
+    "role": "staff",
+    "action": "logout",
+    "details": "ออกจากระบบ"
+  },
+  {
+    "id": "LOG030",
+    "timestamp": "2026-10-04T22:21:33",
+    "username": "customer",
+    "role": "customer",
+    "action": "login",
+    "details": "เข้าสู่ระบบสำเร็จ"
+  },
+  {
+    "id": "LOG031",
+    "timestamp": "2026-10-04T22:31:45",
+    "username": "customer",
+    "role": "customer",
+    "action": "logout",
+    "details": "ออกจากระบบ"
+  },
+  {
+    "id": "LOG032",
+    "timestamp": "2026-10-04T22:32:14",
+    "username": "staff",
+    "role": "staff",
+    "action": "login",
+    "details": "เข้าสู่ระบบสำเร็จ"
+  },
+  {
+    "id": "LOG033",
+    "timestamp": "2026-10-04T22:32:59",
+    "username": "staff",
+    "role": "staff",
+    "action": "unlock_table",
+    "details": "ปลดล็อกโต๊ะ #1 + ยกเลิก 1 ออเดอร์"
+  },
+  {
+    "id": "LOG034",
+    "timestamp": "2026-10-04T22:34:12",
+    "username": "staff",
+    "role": "staff",
+    "action": "logout",
+    "details": "ออกจากระบบ"
+  },
+  {
+    "id": "LOG035",
+    "timestamp": "2026-10-04T22:34:24",
+    "username": "customer",
+    "role": "customer",
+    "action": "login",
+    "details": "เข้าสู่ระบบสำเร็จ"
+  },
+  {
+    "id": "LOG036",
+    "timestamp": "2026-10-04T22:34:25",
+    "username": "customer",
+    "role": "customer",
+    "action": "assign_table",
+    "details": "จองโต๊ะ #5 เป็น host"
+  },
+  {
+    "id": "LOG037",
+    "timestamp": "2026-10-04T22:34:29",
+    "username": "customer",
+    "role": "customer",
+    "action": "place_order",
+    "details": "สั่งอาหารโต๊ะ 5 จำนวน 2 รายการ"
+  },
+  {
+    "id": "LOG038",
+    "timestamp": "2026-10-04T22:34:34",
+    "username": "customer",
+    "role": "customer",
+    "action": "logout",
+    "details": "ออกจากระบบ"
+  },
+  {
+    "id": "LOG039",
+    "timestamp": "2026-10-04T22:34:35",
+    "username": "staff",
+    "role": "staff",
+    "action": "login",
+    "details": "เข้าสู่ระบบสำเร็จ"
+  },
+  {
+    "id": "LOG040",
+    "timestamp": "2026-10-04T22:35:02",
+    "username": "staff",
+    "role": "staff",
+    "action": "unlock_table",
+    "details": "ปลดล็อกโต๊ะ #5 (คงออเดอร์ไว้)"
+  },
+  {
+    "id": "LOG041",
+    "timestamp": "2026-10-04T22:44:01",
+    "username": "staff",
+    "role": "staff",
+    "action": "logout",
+    "details": "ออกจากระบบ"
+  },
+  {
+    "id": "LOG042",
+    "timestamp": "2026-10-04T22:44:03",
+    "username": "admin",
+    "role": "admin",
+    "action": "login",
+    "details": "เข้าสู่ระบบสำเร็จ"
+  },
+  {
+    "id": "LOG043",
+    "timestamp": "2026-10-04T22:47:09",
+    "username": "admin",
+    "role": "admin",
+    "action": "logout",
+    "details": "ออกจากระบบ"
+  },
+  {
+    "id": "LOG044",
+    "timestamp": "2026-10-04T22:47:25",
+    "username": "admin",
+    "role": "admin",
+    "action": "login",
+    "details": "เข้าสู่ระบบสำเร็จ"
+  },
+  {
+    "id": "LOG045",
+    "timestamp": "2026-10-04T23:00:54",
+    "username": "customer",
+    "role": "customer",
+    "action": "login",
+    "details": "เข้าสู่ระบบสำเร็จ"
+  },
+  {
+    "id": "LOG046",
+    "timestamp": "2026-10-04T23:01:35",
+    "username": "customer",
+    "role": "customer",
+    "action": "assign_table",
+    "details": "จองโต๊ะ #1 เป็น host"
+  },
+  {
+    "id": "LOG047",
+    "timestamp": "2026-10-04T23:09:46",
+    "username": "admin",
+    "role": "admin",
+    "action": "login",
+    "details": "เข้าสู่ระบบสำเร็จ"
+  },
+  {
+    "id": "LOG048",
+    "timestamp": "2026-10-04T23:09:50",
+    "username": "admin",
+    "role": "admin",
+    "action": "unlock_table",
+    "details": "ปลดล็อกโต๊ะ #1"
+  },
+  {
+    "id": "LOG049",
+    "timestamp": "2026-10-04T23:10:03",
+    "username": "admin",
+    "role": "admin",
+    "action": "kds_update_status",
+    "details": "อัปเดตออเดอร์ ORD004 เป็น cooking"
+  },
+  {
+    "id": "LOG050",
+    "timestamp": "2026-10-04T23:10:04",
+    "username": "admin",
+    "role": "admin",
+    "action": "kds_update_status",
+    "details": "อัปเดตออเดอร์ ORD004 เป็น served"
+  },
+  {
+    "id": "LOG051",
+    "timestamp": "2026-10-04T23:12:28",
+    "username": "admin",
+    "role": "admin",
+    "action": "menu_toggle",
+    "details": "สลับสถานะเมนู 'M001' เป็น พร้อมขาย"
+  },
+  {
+    "id": "LOG052",
+    "timestamp": "2026-10-04T23:15:16",
+    "username": "admin",
+    "role": "admin",
+    "action": "logout",
+    "details": "ออกจากระบบ"
+  },
+  {
+    "id": "LOG053",
+    "timestamp": "2026-10-04T23:15:17",
+    "username": "admin",
+    "role": "admin",
+    "action": "login",
+    "details": "เข้าสู่ระบบสำเร็จ"
+  },
+  {
+    "id": "LOG054",
+    "timestamp": "2026-10-04T23:15:33",
+    "username": "admin",
+    "role": "admin",
+    "action": "menu_toggle",
+    "details": "สลับสถานะเมนู 'M001' เป็น หมดชั่วคราว"
+  },
+  {
+    "id": "LOG055",
+    "timestamp": "2026-10-04T23:26:37",
+    "username": "admin",
+    "role": "admin",
+    "action": "logout",
+    "details": "ออกจากระบบ"
+  }
+]

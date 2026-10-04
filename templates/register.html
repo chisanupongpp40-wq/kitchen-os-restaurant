@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}สมัครสมาชิก - KITCHEN OS{% endblock %}
+
+{% block content %}
+<div class="min-h-[75vh] flex items-center justify-center py-6 px-4">
+    <div class="max-w-md w-full">
+        <div class="glass-hero rounded-3xl p-8 space-y-6 shadow-2xl relative overflow-hidden border border-white/10">
+
+            <div class="text-center space-y-2">
+                <div class="inline-flex p-3 rounded-2xl bg-[#a78bfa]/10 border border-[#a78bfa]/30 text-[#a78bfa]">
+                    <i data-lucide="user-plus" class="w-7 h-7"></i>
+                </div>
+                <h2 class="text-2xl font-black text-white font-heading tracking-tight">สมัครสมาชิกใหม่</h2>
+                <p class="text-slate-400 text-xs font-mono">Create your KITCHEN OS account</p>
+            </div>
+
+            <form action="{{ url_for('register') }}" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 font-mono">ชื่อ-นามสกุล (FULL NAME)</label>
+                    <input type="text" name="name" value="{{ name or '' }}" required minlength="2"
+                        placeholder="เช่น สมชาย ใจดี"
+                        class="w-full px-4 py-3 bg-slate-900 border border-white/10 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#57ffa8]">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 font-mono">USERNAME (อย่างน้อย 3 ตัวอักษร)</label>
+                    <input type="text" name="username" value="{{ username or '' }}" required minlength="3"
+                        placeholder="เช่น somchai"
+                        pattern="[a-zA-Z0-9_]+"
+                        title="ใช้ได้เฉพาะตัวอักษรภาษาอังกฤษ ตัวเลข และ _ เท่านั้น"
+                        class="w-full px-4 py-3 bg-slate-900 border border-white/10 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#57ffa8]">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 font-mono">PASSWORD (อย่างน้อย 4 ตัวอักษร)</label>
+                    <input type="password" name="password" required minlength="4"
+                        placeholder="••••••••"
+                        class="w-full px-4 py-3 bg-slate-900 border border-white/10 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#57ffa8]">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 font-mono">ยืนยันรหัสผ่าน (CONFIRM PASSWORD)</label>
+                    <input type="password" name="confirm_password" required minlength="4"
+                        placeholder="••••••••"
+                        class="w-full px-4 py-3 bg-slate-900 border border-white/10 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#57ffa8]">
+                </div>
+
+                <button type="submit"
+                    class="w-full py-3.5 px-4 bg-[#57ffa8] hover:bg-[#46e696] text-slate-950 font-black rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+                    <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                    <span>สมัครสมาชิก</span>
+                </button>
+            </form>
+
+            <div class="pt-4 border-t border-white/10 text-center">
+                <p class="text-xs text-slate-400">
+                    มีบัญชีอยู่แล้ว?
+                    <a href="{{ url_for('login') }}" class="text-[#57ffa8] font-bold hover:underline ml-1">
+                        เข้าสู่ระบบที่นี่ →
+                    </a>
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

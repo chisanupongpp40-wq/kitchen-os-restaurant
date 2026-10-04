@@ -1,0 +1,399 @@
+{% extends "base.html" %}
+{% block title %}เช็คบิล - โต๊ะ #{{ table.table_number }} - KITCHEN OS{% endblock %}
+
+{% block content %}
+<!-- Meta สำหรับ JS -->
+<div id="billing-meta" data-subtotal="{{ preview.subtotal if preview else 0 }}" class="hidden"></div>
+
+<!-- ============================================================ -->
+<!-- PRINT STYLES: ปรับให้ใบเสร็จพิมพ์ออกมาสวย -->
+<!-- ============================================================ -->
+<style media="print">
+    @page {
+        size: A4;
+        margin: 15mm;
+    }
+
+    html, body {
+        background: #ffffff !important;
+        background-image: none !important;
+        color: #000000 !important;
+        font-family: 'Inter', 'Sarabun', sans-serif !important;
+        font-size: 12px !important;
+    }
+
+    /* 🔥 บังคับทุก element เป็นสีดำ */
+    * {
+        color: #000000 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    /* ซ่อน non-print */
+    .no-print,
+    header,
+    footer,
+    .glass-nav-pill,
+    button:not(.print-keep),
+    form {
+        display: none !important;
+    }
+
+    /* White box */
+    .glass-hero {
+        background: #ffffff !important;
+        border: 1px solid #cccccc !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+    /* Grid → block */
+    .print-grid {
+        display: block !important;
+    }
+
+    .print-grid > * {
+        width: 100% !important;
+        margin-bottom: 10px !important;
+    }
+
+    .print-hide-right {
+        display: none !important;
+    }
+
+    /* Header */
+    .print-header {
+        text-align: center;
+        padding: 10px 0 15px 0;
+        border-bottom: 2px solid #000000;
+        margin-bottom: 15px;
+    }
+
+    .print-header h3 {
+        font-size: 22px;
+        font-weight: 900;
+        margin: 0;
+        color: #000000 !important;
+    }
+
+    .print-header p {
+        font-size: 10px;
+        color: #333333 !important;
+        margin: 3px 0 0 0;
+    }
+
+    /* Hide icon in print */
+    .no-print-icon {
+        display: none !important;
+    }
+
+    /* Table */
+    .print-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+    }
+
+    .print-table th {
+        text-align: left;
+        border-bottom: 1px solid #000000;
+        padding: 6px 4px;
+        font-size: 11px;
+        font-weight: bold;
+        color: #000000 !important;
+    }
+
+    .print-table td {
+        padding: 5px 4px;
+        font-size: 11px;
+        color: #000000 !important;
+        border-bottom: 1px dashed #dddddd;
+    }
+
+    .print-table td:last-child,
+    .print-table th:last-child {
+        text-align: right;
+    }
+
+    /* Force all text colors → black */
+    .text-\[\#57ffa8\] {
+        color: #000000 !important;
+    }
+    .text-\[\#a78bfa\] {
+        color: #000000 !important;
+    }
+    .text-amber-300 {
+        color: #000000 !important;
+        font-style: italic;
+    }
+    .text-slate-400,
+    .text-slate-500 {
+        color: #333333 !important;
+    }
+
+    /* Total */
+    .print-total {
+        margin-top: 12px;
+        padding-top: 8px;
+        border-top: 2px solid #000000;
+        font-size: 12px;
+        font-weight: bold;
+    }
+
+    .print-total-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 2px 0;
+    }
+
+    .print-total-final {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        margin-top: 6px;
+        border-top: 1px solid #000000;
+        font-size: 15px;
+        font-weight: 900;
+    }
+
+    .print-total-final span {
+        color: #000000 !important;
+    }
+
+    /* Footer */
+    .print-footer {
+        margin-top: 25px;
+        padding-top: 12px;
+        border-top: 1px dashed #999999;
+        text-align: center;
+        font-size: 10px;
+    }
+
+    .print-footer p {
+        color: #333333 !important;
+    }
+
+    /* Hide emoji */
+    .print-footer .emoji {
+        display: none !important;
+    }
+</style>
+
+<!-- ============================================================ -->
+<!-- ON-SCREEN VIEW -->
+<!-- ============================================================ -->
+<div class="max-w-5xl mx-auto space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between glass-hero p-5 rounded-3xl border border-white/10 no-print">
+        <div class="flex items-center space-x-4">
+            <a href="{{ url_for('tables') }}" class="p-3 bg-white/5 hover:bg-white/10 text-white rounded-2xl transition border border-white/10">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl font-black text-white font-heading tracking-tight">เช็คบิล โต๊ะ #{{ table.table_number }}</h1>
+                <p class="text-xs text-slate-400 mt-0.5">คำนวณยอดเงิน หักส่วนลด ค่าบริการ 10% และภาษีมูลค่าเพิ่ม 7%</p>
+            </div>
+        </div>
+
+        {% if order %}
+        <button type="button" onclick="window.print()" class="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-bold rounded-2xl transition flex items-center gap-2">
+            <i data-lucide="printer" class="w-4 h-4"></i>
+            <span>พิมพ์ใบเสร็จ</span>
+        </button>
+        {% endif %}
+    </div>
+
+    {% if order %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start print-grid">
+
+        <!-- ========================================== -->
+        <!-- ใบเสร็จ (พิมพ์ส่วนนี้) -->
+        <!-- ========================================== -->
+        <div class="glass-hero p-6 rounded-3xl border border-white/10 space-y-4">
+
+            <!-- Header ใบเสร็จ -->
+            <div class="text-center pb-4 border-b border-white/10 print-header">
+                <div class="w-10 h-10 rounded-2xl bg-[#57ffa8]/10 text-[#57ffa8] flex items-center justify-center mx-auto mb-2 font-black no-print">
+                    <i data-lucide="receipt" class="w-5 h-5"></i>
+                </div>
+                <h3 class="font-black text-white font-heading text-lg">KITCHEN OS</h3>
+                <p class="text-[11px] text-slate-400 font-mono">RESTAURANT RECEIPT / ใบเสร็จรับเงิน</p>
+                <p class="text-[10px] text-slate-500 mt-1">ที่อยู่: 123 ถ.สุขุมวิท กรุงเทพฯ 10110 | โทร: 02-123-4567</p>
+            </div>
+
+            <!-- ข้อมูลบิล -->
+            <div class="grid grid-cols-2 gap-2 text-[11px] pb-3 border-b border-white/10 print-only-info">
+                <div>
+                    <div class="text-slate-500 text-[10px] uppercase tracking-widest font-mono">เลขที่ใบเสร็จ</div>
+                    <div class="font-bold text-white font-mono">{{ order.id }}</div>
+                </div>
+                <div class="text-right">
+                    <div class="text-slate-500 text-[10px] uppercase tracking-widest font-mono">โต๊ะ</div>
+                    <div class="font-bold text-white font-mono">#{{ table.table_number }}</div>
+                </div>
+                <div>
+                    <div class="text-slate-500 text-[10px] uppercase tracking-widest font-mono">พนักงาน</div>
+                    <div class="font-bold text-white">{{ current_user.name or current_user.username }}</div>
+                </div>
+                <div class="text-right">
+                    <div class="text-slate-500 text-[10px] uppercase tracking-widest font-mono">วันที่</div>
+                    <div class="font-bold text-white font-mono" id="print-date">-</div>
+                </div>
+            </div>
+
+            <!-- ตารางรายการอาหาร -->
+            <table class="w-full text-xs print-table">
+                <thead>
+                    <tr>
+                        <th style="width: 45%;">รายการ</th>
+                        <th style="width: 15%; text-align: center;">จำนวน</th>
+                        <th style="width: 20%; text-align: right;">ราคา/หน่วย</th>
+                        <th style="width: 20%; text-align: right;">รวม</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in (order.get('items') or []) %}
+                    <tr>
+                        <td>
+                            <span class="font-bold text-white">{{ item.name }}</span>
+                            {% if item.note %}<span class="block text-[10px] text-amber-300 italic">→ {{ item.note }}</span>{% endif %}
+                        </td>
+                        <td style="text-align: center;">{{ item.quantity }}</td>
+                        <td style="text-align: right;">฿{{ "%.2f"|format(item.price) }}</td>
+                        <td style="text-align: right; font-weight: bold;">฿{{ "%.2f"|format(item.price * item.quantity) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- สรุปยอดเงิน -->
+            <div class="pt-4 border-t border-white/10 space-y-2 text-xs font-mono print-total">
+                <div class="flex justify-between text-slate-400 print-total-row">
+                    <span>ยอดรวมอาหาร (Subtotal):</span>
+                    <span class="text-white font-bold">฿{{ "%.2f"|format(preview.subtotal) }}</span>
+                </div>
+                <div class="flex justify-between text-[#a78bfa] print-total-row">
+                    <span>ส่วนลด (Discount):</span>
+                    <span id="display-discount">-฿0.00</span>
+                </div>
+                <div class="flex justify-between text-slate-400 print-total-row">
+                    <span>ค่าบริการ 10% (Service Charge):</span>
+                    <span id="display-service" class="text-white">฿{{ "%.2f"|format(preview.service_charge) }}</span>
+                </div>
+                <div class="flex justify-between text-slate-400 print-total-row">
+                    <span>ภาษีมูลค่าเพิ่ม 7% (VAT):</span>
+                    <span id="display-vat" class="text-white">฿{{ "%.2f"|format(preview.vat) }}</span>
+                </div>
+                <div class="flex justify-between text-base font-black text-white pt-2 border-t border-white/10 print-total-final">
+                    <span class="text-[#57ffa8]">ยอดสุทธิ (Total):</span>
+                    <span id="display-total" class="text-[#57ffa8]">฿{{ "%.2f"|format(preview.total_amount) }}</span>
+                </div>
+            </div>
+
+            <!-- Footer ใบเสร็จ -->
+            <div class="pt-4 text-center print-footer">
+                <p style="font-weight: bold; color: #000;">ขอบคุณที่ใช้บริการ</p>
+                <p style="margin-top: 4px;">Thank you for dining with us</p>
+                <p style="margin-top: 6px; font-size: 9px;">*** ใบเสร็จนี้เป็นหลักฐานการชำระเงิน ***</p>
+            </div>
+
+        </div>
+
+        <!-- ========================================== -->
+        <!-- ฟอร์มยืนยันชำระเงิน (ซ่อนตอนพิมพ์) -->
+        <!-- ========================================== -->
+        <div class="glass-hero p-6 rounded-3xl border border-white/10 space-y-5 print-hide-right no-print">
+            <h3 class="font-bold text-white text-base font-heading pb-3 border-b border-white/10 flex items-center gap-2">
+                <i data-lucide="credit-card" class="w-5 h-5 text-[#57ffa8]"></i>
+                <span>ยืนยันการชำระเงิน</span>
+            </h3>
+
+            <form action="{{ url_for('billing', table_id=table.id) }}" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 font-mono">ส่วนลดพิเศษ (% DISCOUNT)</label>
+                    <input type="number" id="discount_percent" name="discount_percent" min="0" max="100" value="0" step="1"
+                        oninput="recalculate()"
+                        class="w-full px-4 py-3 bg-slate-900 border border-white/10 rounded-2xl text-sm text-white font-mono focus:outline-none focus:border-[#57ffa8]">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 font-mono">ช่องทางชำระเงิน (PAYMENT METHOD)</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="flex items-center gap-2 p-3 bg-slate-900 border border-white/10 rounded-2xl cursor-pointer hover:border-[#57ffa8]">
+                            <input type="radio" name="payment_method" value="PromptPay QR" checked class="accent-[#57ffa8]">
+                            <span class="text-xs font-bold text-white">PromptPay QR</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-3 bg-slate-900 border border-white/10 rounded-2xl cursor-pointer hover:border-[#57ffa8]">
+                            <input type="radio" name="payment_method" value="Cash" class="accent-[#57ffa8]">
+                            <span class="text-xs font-bold text-white">เงินสด (Cash)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit"
+                    class="w-full py-4 bg-[#57ffa8] hover:bg-[#43e693] text-slate-950 font-black rounded-2xl text-sm shadow-[0_0_20px_rgba(87,255,168,0.3)] transition flex items-center justify-center gap-2 mt-4">
+                    <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                    <span>ยืนยันรับเงิน & ปิดโต๊ะ</span>
+                </button>
+            </form>
+
+            <p class="text-[10px] text-slate-500 text-center pt-2">
+                * ตรวจสอบรายการอาหารและยอดเงินให้ถูกต้องก่อนกดยืนยัน
+            </p>
+        </div>
+
+    </div>
+    {% else %}
+    <div class="glass-hero p-16 rounded-3xl text-center text-slate-400 border border-white/10 space-y-3">
+        <i data-lucide="receipt" class="w-12 h-12 mx-auto text-slate-600"></i>
+        <h3 class="text-lg font-bold text-white">โต๊ะนี้ไม่มีออเดอร์ค้างชำระ</h3>
+        <p class="text-xs text-slate-500">โต๊ะว่าง หรือยังไม่ได้สั่งอาหารเข้ามาในระบบ</p>
+        <div class="pt-2">
+            <a href="{{ url_for('tables') }}" class="inline-flex px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-2xl text-xs font-bold transition">
+                กลับสู่ผังโต๊ะ
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // ตั้งวันที่พิมพ์
+    document.addEventListener('DOMContentLoaded', () => {
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('th-TH', {
+            year: 'numeric', month: 'long', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
+        const dateEl = document.getElementById('print-date');
+        if (dateEl) dateEl.textContent = dateStr;
+    });
+
+    // คำนวณใหม่เมื่อกรอกส่วนลด
+    function recalculate() {
+        const meta = document.getElementById('billing-meta');
+        const subtotal = parseFloat(meta ? meta.dataset.subtotal : 0) || 0;
+        const discountInput = document.getElementById('discount_percent');
+        const discountPercent = parseFloat(discountInput.value) || 0;
+
+        // Clamp 0-100
+        let safePercent = Math.max(0, Math.min(100, discountPercent));
+
+        const discountAmount = subtotal * (safePercent / 100);
+        const afterDiscount = Math.max(0, subtotal - discountAmount);
+        const serviceCharge = afterDiscount * 0.10;
+        const vat = (afterDiscount + serviceCharge) * 0.07;
+        const total = afterDiscount + serviceCharge + vat;
+
+        document.getElementById('display-discount').innerText = '-฿' + discountAmount.toFixed(2);
+        document.getElementById('display-service').innerText = '฿' + serviceCharge.toFixed(2);
+        document.getElementById('display-vat').innerText = '฿' + vat.toFixed(2);
+        document.getElementById('display-total').innerText = '฿' + total.toFixed(2);
+    }
+</script>
+{% endblock %}

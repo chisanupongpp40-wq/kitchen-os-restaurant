@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+{% block title %}ผังโต๊ะอาหาร - KITCHEN OS{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 glass-hero p-6 sm:p-8 rounded-3xl border border-white/10">
+        <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#57ffa8]/10 border border-[#57ffa8]/30 text-[#57ffa8] text-xs font-bold tracking-wide mb-3">
+                <span class="w-2 h-2 rounded-full bg-[#57ffa8] animate-ping"></span>
+                <span>TABLE SERVICE</span>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-black text-white font-heading tracking-tight">ผังโต๊ะอาหาร (Table Floor Plan)</h1>
+            <p class="text-slate-400 text-xs sm:text-sm mt-1">คลิกปุ่มที่โต๊ะเพื่อเปิดโต๊ะ สั่งอาหาร หรือจัดการสถานะ</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <div class="px-5 py-3 rounded-2xl glass-hero border border-[#57ffa8]/30 text-center min-w-[95px]">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-[#57ffa8]">ว่าง</div>
+                <div class="text-2xl font-black font-heading text-white">{{ summary.available or 0 }}</div>
+            </div>
+            <div class="px-5 py-3 rounded-2xl glass-hero border border-amber-500/30 text-center min-w-[95px]">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-amber-400">มีลูกค้า</div>
+                <div class="text-2xl font-black font-heading text-white">{{ summary.occupied or 0 }}</div>
+            </div>
+            <div class="px-5 py-3 rounded-2xl glass-hero border border-rose-500/30 text-center min-w-[95px]">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-rose-400">รอเช็คบิล</div>
+                <div class="text-2xl font-black font-heading text-white">{{ summary.billing or 0 }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grid โต๊ะ -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {% for table in tables %}
+        <div class="glass-hero rounded-3xl p-6 flex flex-col justify-between border transition duration-200 hover:border-white/30
+            {% if table.status == 'available' %}border-[#57ffa8]/30
+            {% elif table.status == 'occupied' %}border-amber-500/30
+            {% else %}border-rose-500/40{% endif %}">
+
+            <div>
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <span class="text-[11px] uppercase font-bold tracking-widest text-slate-400 font-mono">TABLE</span>
+                        <div class="text-4xl font-black font-heading text-white tracking-tight">#{{ table.table_number }}</div>
+                    </div>
+
+                    <span class="px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5
+                        {% if table.status == 'available' %}bg-[#57ffa8]/10 text-[#57ffa8] border-[#57ffa8]/40
+                        {% elif table.status == 'occupied' %}bg-amber-500/10 text-amber-300 border-amber-500/40
+                        {% else %}bg-rose-950/80 text-rose-300 border-rose-500/50 animate-pulse{% endif %}">
+                        <span class="w-1.5 h-1.5 rounded-full
+                            {% if table.status == 'available' %}bg-[#57ffa8]
+                            {% elif table.status == 'occupied' %}bg-amber-400
+                            {% else %}bg-rose-400{% endif %}"></span>
+                        {% if table.status == 'available' %}ว่าง
+                        {% elif table.status == 'occupied' %}มีลูกค้า
+                        {% else %}รอเช็คบิล{% endif %}
+                    </span>
+                </div>
+
+                <div class="flex items-center justify-between text-xs text-slate-300 py-3 border-y border-white/5 mb-6">
+                    <span class="flex items-center gap-1.5 text-white font-medium">
+                        <i data-lucide="users" class="w-4 h-4 text-slate-400"></i>
+                        <span>{{ table.seats }} ที่นั่ง</span>
+                    </span>
+                    {% if table.host %}
+                    <span class="text-[10px] text-purple-300 font-mono bg-purple-500/10 border border-purple-500/30 px-2 py-0.5 rounded-lg">
+                        HOST: {{ table.host }}
+                    </span>
+                    {% elif table.current_order_id %}
+                    <span class="font-mono text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2.5 py-0.5 rounded-lg text-xs font-bold">
+                        {{ table.current_order_id }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="space-y-2 pt-2">
+                <a href="{{ url_for('pos', table_id=table.id) }}"
+                    class="w-full py-3 px-4 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition duration-200
+                    {% if table.status == 'available' %}bg-[#57ffa8] hover:bg-[#43e693] text-slate-950 font-black
+                    {% elif table.status == 'occupied' %}bg-amber-500 hover:bg-amber-400 text-slate-950 font-black
+                    {% else %}bg-slate-800 hover:bg-slate-700 text-white border border-white/10{% endif %}">
+                    <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                    <span>{% if table.status == 'available' %}เปิดโต๊ะ / สั่งอาหาร{% else %}ดูรายการ / สั่งเพิ่ม{% endif %}</span>
+                </a>
+
+                <div class="flex gap-2">
+                    {% if table.status == 'occupied' %}
+                    <form action="{{ url_for('update_table_status_route') }}" method="POST" class="flex-1">
+                        <input type="hidden" name="table_id" value="{{ table.id }}">
+                        <input type="hidden" name="status" value="billing">
+                        <button type="submit" class="w-full py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs font-bold transition">
+                            เรียกเช็คบิล
+                        </button>
+                    </form>
+                    <button type="button"
+                        class="unlock-btn flex-1 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-xl text-xs font-bold transition"
+                        data-table-id="{{ table.id }}"
+                        data-table-number="{{ table.table_number }}">
+                        ปลดล็อก
+                    </button>
+                    {% elif table.status == 'billing' %}
+                    <a href="{{ url_for('billing', table_id=table.id) }}" class="flex-1 py-2 bg-rose-600 hover:bg-rose-500 text-white text-center rounded-xl text-xs font-bold transition">
+                        ไปหน้าคิดเงิน
+                    </a>
+                    <button type="button"
+                        class="unlock-btn px-3 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-xl text-xs font-bold transition"
+                        data-table-id="{{ table.id }}"
+                        data-table-number="{{ table.table_number }}"
+                        title="ปลดล็อก">
+                        <i data-lucide="unlock" class="w-3.5 h-3.5"></i>
+                    </button>
+                    {% else %}
+                    <button type="button"
+                        class="unlock-btn w-full py-2 bg-white/5 hover:bg-white/10 text-slate-400 border border-white/10 rounded-xl text-xs font-bold transition"
+                        data-table-id="{{ table.id }}"
+                        data-table-number="{{ table.table_number }}">
+                        ล้างข้อมูล
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- MODAL: ปลดล็อกโต๊ะ -->
+<!-- ============================================ -->
+<div id="unlockModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div class="glass-hero rounded-3xl p-6 sm:p-8 w-full max-w-md border border-amber-500/30 relative">
+        <button type="button" onclick="closeUnlockModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center transition">
+            <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+
+        <div class="mb-5">
+            <div class="inline-flex p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 mb-3">
+                <i data-lucide="unlock" class="w-6 h-6"></i>
+            </div>
+            <h2 class="text-2xl font-black text-white font-heading tracking-tight">ปลดล็อกโต๊ะ</h2>
+            <p class="text-slate-400 text-xs mt-1">
+                โต๊ะ <span id="unlockTableNumber" class="font-bold text-white">#?</span> จะกลับเป็น "ว่าง"
+            </p>
+        </div>
+
+        <form id="unlockForm" action="{{ url_for('tables_unlock') }}" method="POST" class="space-y-4">
+            <input type="hidden" id="unlockTableId" name="table_id" value="">
+
+            <div>
+                <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 font-mono">
+                    จัดการออเดอร์ค้าง
+                </label>
+                <div class="space-y-2">
+                    <label class="flex items-start gap-3 p-3.5 bg-slate-900 border border-white/10 rounded-2xl cursor-pointer hover:border-amber-500 transition">
+                        <input type="radio" name="cancel_orders" value="1" checked class="accent-amber-500 mt-0.5">
+                        <div>
+                            <div class="text-xs font-bold text-white">ยกเลิกออเดอร์ด้วย</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">ออเดอร์ที่ยังไม่เสิร์ฟจะถูกทำเครื่องหมาย "ยกเลิก" (แนะนำ)</div>
+                        </div>
+                    </label>
+                    <label class="flex items-start gap-3 p-3.5 bg-slate-900 border border-white/10 rounded-2xl cursor-pointer hover:border-amber-500 transition">
+                        <input type="radio" name="cancel_orders" value="0" class="accent-amber-500 mt-0.5">
+                        <div>
+                            <div class="text-xs font-bold text-white">เก็บออเดอร์ไว้</div>
+                            <div class="text-[10px] text-slate-400 mt-0.5">ออเดอร์จะยังค้างใน KDS ให้ยกเลิกเองทีหลัง</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <label for="unlockReason" class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 font-mono">
+                    เหตุผล (ไม่บังคับ)
+                </label>
+                <input type="text" id="unlockReason" name="reason" maxlength="200"
+                    placeholder="เช่น ลูกค้าออกไปโดยไม่สั่ง, ล้างข้อมูลเก่า"
+                    class="w-full px-4 py-3 bg-slate-900 border border-white/10 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500">
+            </div>
+
+            <div class="flex gap-2 pt-2">
+                <button type="button" onclick="closeUnlockModal()"
+                    class="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl transition text-sm">
+                    ยกเลิก
+                </button>
+                <button type="submit"
+                    class="flex-1 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl transition text-sm flex items-center justify-center gap-2">
+                    <i data-lucide="unlock" class="w-4 h-4"></i>
+                    <span>ยืนยันปลดล็อก</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const unlockModal = document.getElementById('unlockModal');
+    const unlockTableId = document.getElementById('unlockTableId');
+    const unlockTableNumber = document.getElementById('unlockTableNumber');
+    const unlockForm = document.getElementById('unlockForm');
+    const unlockReason = document.getElementById('unlockReason');
+
+    document.querySelectorAll('.unlock-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            unlockTableId.value = btn.dataset.tableId;
+            unlockTableNumber.innerText = '#' + btn.dataset.tableNumber;
+            unlockReason.value = '';
+            // reset radio เป็น default
+            unlockForm.querySelector('input[name="cancel_orders"][value="1"]').checked = true;
+
+            unlockModal.classList.remove('hidden');
+            unlockModal.classList.add('flex');
+            setTimeout(() => unlockReason.focus(), 100);
+        });
+    });
+
+    function closeUnlockModal() {
+        unlockModal.classList.add('hidden');
+        unlockModal.classList.remove('flex');
+    }
+
+    unlockModal.addEventListener('click', (e) => {
+        if (e.target === unlockModal) closeUnlockModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !unlockModal.classList.contains('hidden')) closeUnlockModal();
+    });
+</script>
+{% endblock %}

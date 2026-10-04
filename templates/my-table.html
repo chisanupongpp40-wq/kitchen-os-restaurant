@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+{% block title %}โต๊ะ #{{ table.table_number }} ของฉัน - KITCHEN OS{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6">
+
+    <!-- Header โต๊ะ -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 glass-hero p-6 sm:p-8 rounded-3xl border border-[#57ffa8]/30 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-[#57ffa8]/10 rounded-full blur-3xl -z-0"></div>
+        <div class="relative z-10">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#57ffa8]/10 border border-[#57ffa8]/30 text-[#57ffa8] text-xs font-bold tracking-wide mb-3">
+                <span class="w-2 h-2 rounded-full bg-[#57ffa8] animate-ping"></span>
+                <span>MY TABLE</span>
+            </div>
+            <h1 class="text-4xl sm:text-5xl font-black text-white font-heading tracking-tight">
+                โต๊ะ #{{ table.table_number }}
+            </h1>
+            <p class="text-slate-400 text-xs sm:text-sm mt-2 flex items-center gap-3">
+                <span class="flex items-center gap-1.5">
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                    {{ table.seats }} ที่นั่ง
+                </span>
+                <span class="flex items-center gap-1.5">
+                    <i data-lucide="user-check" class="w-4 h-4"></i>
+                    {{ members|length }} คนในกลุ่ม
+                </span>
+            </p>
+        </div>
+
+        <div class="relative z-10 flex items-center gap-3">
+            {% if table.status == 'available' %}
+            <span class="px-4 py-2 rounded-2xl text-xs font-bold bg-[#57ffa8]/10 text-[#57ffa8] border border-[#57ffa8]/40">ว่าง</span>
+            {% elif table.status == 'occupied' %}
+            <span class="px-4 py-2 rounded-2xl text-xs font-bold bg-amber-500/10 text-amber-300 border border-amber-500/40">มีลูกค้า</span>
+            {% elif table.status == 'billing' %}
+            <span class="px-4 py-2 rounded-2xl text-xs font-bold bg-rose-500/10 text-rose-300 border border-rose-500/40 animate-pulse">รอเช็คบิล</span>
+            {% endif %}
+
+            {% if is_host %}
+            <span class="px-4 py-2 rounded-2xl text-xs font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40 flex items-center gap-1.5">
+                <i data-lucide="crown" class="w-3.5 h-3.5"></i>
+                เจ้าของโต๊ะ
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ปุ่ม Action หลัก -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <a href="{{ url_for('pos', table_id=table.id) }}"
+            class="glass-hero p-5 rounded-3xl border border-[#57ffa8]/40 hover:border-[#57ffa8] transition flex flex-col items-center justify-center gap-2 text-center group">
+            <div class="w-11 h-11 rounded-2xl bg-[#57ffa8]/15 text-[#57ffa8] flex items-center justify-center group-hover:scale-110 transition">
+                <i data-lucide="utensils" class="w-5 h-5"></i>
+            </div>
+            <div class="text-xs font-black text-white">สั่งอาหาร</div>
+            <div class="text-[10px] text-slate-400">เพิ่มรายการใหม่</div>
+        </a>
+
+        {% if is_host %}
+        <form action="{{ url_for('my_table_invite') }}" method="POST">
+            <button type="submit"
+                class="w-full glass-hero p-5 rounded-3xl border border-blue-500/40 hover:border-blue-500 transition flex flex-col items-center justify-center gap-2 text-center group">
+                <div class="w-11 h-11 rounded-2xl bg-blue-500/15 text-blue-300 flex items-center justify-center group-hover:scale-110 transition">
+                    <i data-lucide="user-plus" class="w-5 h-5"></i>
+                </div>
+                <div class="text-xs font-black text-white">เชิญเพื่อน</div>
+                <div class="text-[10px] text-slate-400">สร้างรหัสเชิญ</div>
+            </button>
+        </form>
+        {% else %}
+        <div class="glass-hero p-5 rounded-3xl border border-white/10 flex flex-col items-center justify-center gap-2 text-center opacity-60">
+            <div class="w-11 h-11 rounded-2xl bg-white/5 text-slate-500 flex items-center justify-center">
+                <i data-lucide="user-plus" class="w-5 h-5"></i>
+            </div>
+            <div class="text-xs font-bold text-slate-400">เชิญเพื่อน</div>
+            <div class="text-[10px] text-slate-500">เฉพาะเจ้าของโต๊ะ</div>
+        </div>
+        {% endif %}
+
+        {% if is_host %}
+        <a href="{{ url_for('my_table_change') }}"
+            class="glass-hero p-5 rounded-3xl border border-purple-500/40 hover:border-purple-500 transition flex flex-col items-center justify-center gap-2 text-center group">
+            <div class="w-11 h-11 rounded-2xl bg-purple-500/15 text-purple-300 flex items-center justify-center group-hover:scale-110 transition">
+                <i data-lucide="move-right" class="w-5 h-5"></i>
+            </div>
+            <div class="text-xs font-black text-white">เปลี่ยนโต๊ะ</div>
+            <div class="text-[10px] text-slate-400">ย้ายทั้งกลุ่ม</div>
+        </a>
+        {% else %}
+        <form action="{{ url_for('my_table_leave') }}" method="POST"
+              onsubmit="return confirm('ยืนยันออกจากโต๊ะนี้?');">
+            <button type="submit"
+                class="w-full glass-hero p-5 rounded-3xl border border-amber-500/40 hover:border-amber-500 transition flex flex-col items-center justify-center gap-2 text-center group">
+                <div class="w-11 h-11 rounded-2xl bg-amber-500/15 text-amber-300 flex items-center justify-center group-hover:scale-110 transition">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                </div>
+                <div class="text-xs font-black text-white">ออกจากโต๊ะ</div>
+                <div class="text-[10px] text-slate-400">ออกจากกลุ่ม</div>
+            </button>
+        </form>
+        {% endif %}
+
+        <form action="{{ url_for('my_table_request_bill') }}" method="POST"
+              onsubmit="return confirm('เรียกพนักงานมาเก็บเงินที่โต๊ะ?');">
+            <button type="submit" {% if table.status == 'billing' %}disabled{% endif %}
+                class="w-full glass-hero p-5 rounded-3xl border transition flex flex-col items-center justify-center gap-2 text-center group
+                {% if table.status == 'billing' %}border-white/10 opacity-50 cursor-not-allowed{% else %}border-rose-500/40 hover:border-rose-500{% endif %}">
+                <div class="w-11 h-11 rounded-2xl flex items-center justify-center group-hover:scale-110 transition
+                    {% if table.status == 'billing' %}bg-white/5 text-slate-500{% else %}bg-rose-500/15 text-rose-300{% endif %}">
+                    <i data-lucide="receipt" class="w-5 h-5"></i>
+                </div>
+                <div class="text-xs font-black {% if table.status == 'billing' %}text-slate-500{% else %}text-white{% endif %}">
+                    {% if table.status == 'billing' %}เรียกแล้ว{% else %}ขอเช็คบิล{% endif %}
+                </div>
+                <div class="text-[10px] text-slate-400">เรียกพนักงาน</div>
+            </button>
+        </form>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- คอลัมน์ซ้าย: รหัสเชิญ + สมาชิก -->
+        <div class="lg:col-span-2 space-y-6">
+
+            {% if invite_code %}
+            <div class="glass-hero p-6 rounded-3xl border border-blue-500/40 space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-white/10">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="key-round" class="w-5 h-5 text-blue-300"></i>
+                        <h3 class="font-black text-white text-base font-heading">รหัสเชิญเพื่อน</h3>
+                    </div>
+                    <span class="text-[10px] text-slate-400 font-mono">INVITE CODE</span>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div class="flex-1 bg-slate-950 rounded-2xl p-5 border border-blue-500/30 text-center">
+                        <div class="text-[10px] text-slate-500 font-mono uppercase tracking-widest mb-1">CODE</div>
+                        <div class="text-4xl font-black tracking-[0.3em] text-blue-300 font-mono">{{ invite_code }}</div>
+                    </div>
+                    <button type="button" onclick="copyInviteCode('{{ invite_code }}')"
+                        class="px-5 py-5 bg-blue-500/20 hover:bg-blue-500/40 text-blue-300 rounded-2xl transition border border-blue-500/40 flex flex-col items-center gap-1">
+                        <i data-lucide="copy" class="w-5 h-5"></i>
+                        <span class="text-[10px] font-bold">คัดลอก</span>
+                    </button>
+                </div>
+
+                <p class="text-[11px] text-slate-400 text-center">
+                    แชร์รหัสนี้ให้เพื่อน เพื่อให้เขาเข้าร่วมโต๊ะได้จากหน้า <span class="text-blue-300 font-bold">เข้าร่วมโต๊ะ</span>
+                </p>
+            </div>
+            {% elif is_host %}
+            <div class="glass-hero p-6 rounded-3xl border border-white/10 text-center space-y-3">
+                <i data-lucide="key-round" class="w-10 h-10 text-slate-600 mx-auto"></i>
+                <p class="text-sm text-slate-400">กดปุ่ม <span class="text-blue-300 font-bold">"เชิญเพื่อน"</span> ด้านบนเพื่อสร้างรหัสเชิญ</p>
+            </div>
+            {% endif %}
+
+            <!-- สมาชิกในโต๊ะ -->
+            <div class="glass-hero p-6 rounded-3xl border border-white/10">
+                <div class="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="users" class="w-5 h-5 text-[#57ffa8]"></i>
+                        <h3 class="font-black text-white text-base font-heading">สมาชิกในโต๊ะ</h3>
+                    </div>
+                    <span class="bg-[#57ffa8]/20 text-[#57ffa8] border border-[#57ffa8]/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full font-mono">
+                        {{ members|length }} คน
+                    </span>
+                </div>
+
+                <div class="space-y-2">
+                    {% for m in members %}
+                    <div class="flex items-center justify-between p-3.5 bg-slate-900/60 rounded-2xl border border-white/5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm
+                                {% if m.username == table.host %}bg-gradient-to-tr from-purple-500 to-purple-300 text-white
+                                {% else %}bg-white/10 text-slate-300{% endif %}">
+                                {{ m.name[:1]|upper if m.name else m.username[:1]|upper }}
+                            </div>
+                            <div>
+                                <div class="text-xs font-bold text-white flex items-center gap-2">
+                                    <span>{{ m.name or m.username }}</span>
+                                    {% if m.username == table.host %}
+                                    <span class="text-[9px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-bold uppercase">HOST</span>
+                                    {% endif %}
+                                    {% if m.username == current_user.username %}
+                                    <span class="text-[9px] px-2 py-0.5 rounded-full bg-[#57ffa8]/20 text-[#57ffa8] border border-[#57ffa8]/30 font-bold uppercase">คุณ</span>
+                                    {% endif %}
+                                </div>
+                                <div class="text-[10px] text-slate-500 font-mono mt-0.5">@{{ m.username }}</div>
+                            </div>
+                        </div>
+
+                        {% if is_host and m.username != table.host %}
+                        <form action="{{ url_for('my_table_kick') }}" method="POST"
+                              onsubmit="return confirm('เตะ {{ m.name or m.username }} ออกจากโต๊ะ?');">
+                            <input type="hidden" name="member_username" value="{{ m.username }}">
+                            <button type="submit"
+                                class="w-8 h-8 rounded-xl flex items-center justify-center bg-rose-500/10 text-rose-300 border border-rose-500/30 hover:bg-rose-500/20 transition"
+                                title="เตะออก">
+                                <i data-lucide="user-minus" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- คอลัมน์ขวา: ออเดอร์ + ยอดเงิน -->
+        <div class="glass-hero p-6 rounded-3xl border border-white/10 space-y-4 lg:sticky lg:top-20">
+            <div class="flex items-center justify-between pb-4 border-b border-white/10">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="clipboard-list" class="w-5 h-5 text-amber-400"></i>
+                    <h3 class="font-black text-white text-base font-heading">รายการที่สั่ง</h3>
+                </div>
+                <button onclick="location.reload()" class="w-8 h-8 rounded-xl flex items-center justify-center bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition" title="รีเฟรช">
+                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                </button>
+            </div>
+
+            {% if orders %}
+            <div class="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+                {% for o in orders %}
+                <div class="bg-slate-900/60 rounded-2xl border border-white/5 p-3 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-mono font-bold text-slate-400">{{ o.id }}</span>
+                        {% if o.status == 'pending' %}
+                        <span class="text-[9px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">รอทำ</span>
+                        {% elif o.status == 'cooking' %}
+                        <span class="text-[9px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 font-bold">กำลังปรุง</span>
+                        {% endif %}
+                    </div>
+                    <div class="space-y-1.5">
+                        {% for item in (o.get('items') or []) %}
+                        <div class="flex items-center justify-between text-[11px]">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-[#57ffa8] font-black font-mono">{{ item.quantity }}x</span>
+                                <span class="text-white">{{ item.name }}</span>
+                            </div>
+                            <span class="text-slate-300 font-mono">฿{{ "%.2f"|format(item.price * item.quantity) }}</span>
+                        </div>
+                        {% if item.note %}
+                        <div class="text-[9px] text-amber-300 italic pl-6">→ {{ item.note }}</div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="pt-4 border-t border-white/10 space-y-2">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-slate-400">ยอดรวมอาหาร:</span>
+                    <span class="text-lg font-black text-white font-mono">฿{{ "%.2f"|format(subtotal) }}</span>
+                </div>
+                <p class="text-[10px] text-slate-500 text-right">*ยังไม่รวม Service Charge 10% และ VAT 7%</p>
+            </div>
+            {% else %}
+            <div class="text-center py-12 text-slate-500">
+                <i data-lucide="clipboard-x" class="w-10 h-10 mx-auto mb-2 opacity-40"></i>
+                <p class="text-xs">ยังไม่มีรายการอาหาร</p>
+                <a href="{{ url_for('pos', table_id=table.id) }}"
+                    class="inline-flex mt-3 px-4 py-2 bg-[#57ffa8]/20 hover:bg-[#57ffa8]/30 text-[#57ffa8] text-xs font-bold rounded-xl border border-[#57ffa8]/30 transition">
+                    สั่งอาหารเลย →
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Auto-refresh ทุก 15 วิ (หยุดเมื่อกดปุ่ม/พิมพ์อยู่)
+    let lastInteraction = Date.now();
+    const interactionEvents = ['click', 'keydown', 'input', 'focus', 'change'];
+    interactionEvents.forEach(evt => {
+        document.addEventListener(evt, () => { lastInteraction = Date.now(); }, true);
+    });
+
+    setTimeout(() => {
+        // ถ้ามีการขยับใน 5 วิที่ผ่านมา → เลื่อน refresh ออกไป
+        if (Date.now() - lastInteraction > 5000) {
+            location.reload();
+        } else {
+            // ลองใหม่ใน 10 วิ
+            setTimeout(() => location.reload(), 10000);
+        }
+    }, 15000);
+
+    function copyInviteCode(code) {
+        try {
+            navigator.clipboard.writeText(code).then(() => {
+                alert('คัดลอกรหัสแล้ว: ' + code);
+            }).catch(() => {
+                prompt('คัดลอกรหัสด้วยตัวเอง:', code);
+            });
+        } catch (e) {
+            prompt('คัดลอกรหัสด้วยตัวเอง:', code);
+        }
+    }
+</script>
+{% endblock %}

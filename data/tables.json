@@ -1,0 +1,82 @@
+[
+  {
+    "id": 1,
+    "table_number": 1,
+    "seats": 2,
+    "status": "available",
+    "current_order_id": null,
+    "host": null,
+    "members": [],
+    "invite_code": null
+  },
+  {
+    "id": 2,
+    "table_number": 2,
+    "seats": 4,
+    "status": "available",
+    "current_order_id": null,
+    "host": null,
+    "members": [],
+    "invite_code": null
+  },
+  {
+    "id": 3,
+    "table_number": 3,
+    "seats": 6,
+    "status": "available",
+    "current_order_id": null,
+    "host": null,
+    "members": [],
+    "invite_code": null
+  },
+  {
+    "id": 4,
+    "table_number": 4,
+    "seats": 8,
+    "status": "available",
+    "current_order_id": null,
+    "host": null,
+    "members": [],
+    "invite_code": null
+  },
+  {
+    "id": 5,
+    "table_number": 5,
+    "seats": 2,
+    "status": "available",
+    "current_order_id": null,
+    "host": null,
+    "members": [],
+    "invite_code": null
+  },
+  {
+    "id": 6,
+    "table_number": 6,
+    "seats": 4,
+    "status": "available",
+    "current_order_id": null,
+    "host": null,
+    "members": [],
+    "invite_code": null
+  },
+  {
+    "id": 7,
+    "table_number": 7,
+    "seats": 6,
+    "status": "available",
+    "current_order_id": null,
+    "host": null,
+    "members": [],
+    "invite_code": null
+  },
+  {
+    "id": 8,
+    "table_number": 8,
+    "seats": 8,
+    "status": "available",
+    "current_order_id": null,
+    "host": null,
+    "members": [],
+    "invite_code": null
+  }
+]

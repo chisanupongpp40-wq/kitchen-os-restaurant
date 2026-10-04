@@ -1,0 +1,20 @@
+[
+  {
+    "username": "admin",
+    "password": "scrypt:32768:8:1$3xqPXRQjAHwCGF1o$a6df0ebca799bcf0fa8436682c7170c58da946a77a3b5dccc0e0079569dd6e7bb414099d707963ba05158ad59b6cebc707c2db7f7ca24f2d6039dd05d8c5200e",
+    "role": "admin",
+    "name": "ผู้จัดการร้าน"
+  },
+  {
+    "username": "staff",
+    "password": "scrypt:32768:8:1$830LqCm12PLS32X3$0e13d5cbd2e301249c343d215641a5406cb30fc9645e75ce8f9a75578cbc951e2f7e82f5be0530c21e9e0aa097582c7229f190676c347b8bdf4e577fd683db12",
+    "role": "staff",
+    "name": "พนักงานบริการ"
+  },
+  {
+    "username": "customer",
+    "password": "scrypt:32768:8:1$dP5RRghHcomsHCrl$22fe94217e75dd1b5ab69accc9d051de7b43e7ece9de2966b80d490e83d14327d5dc7149577275c038a044df757390e6d2527c073df3ee8718f89ae07cf2c060",
+    "role": "customer",
+    "name": "ลูกค้าทั่วไป"
+  }
+]

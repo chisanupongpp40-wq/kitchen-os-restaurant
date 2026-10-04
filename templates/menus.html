@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+{% block title %}จัดการเมนูอาหาร - KITCHEN OS{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header + Stats -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 glass-hero p-6 sm:p-8 rounded-3xl border border-white/10">
+        <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#57ffa8]/10 border border-[#57ffa8]/30 text-[#57ffa8] text-xs font-bold tracking-wide mb-3">
+                <i data-lucide="utensils-crossed" class="w-3.5 h-3.5"></i>
+                <span>MENU MANAGEMENT (ADMIN)</span>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-black text-white font-heading tracking-tight">
+                จัดการเมนูอาหาร
+            </h1>
+            <p class="text-slate-400 text-xs sm:text-sm mt-1">
+                เพิ่ม / แก้ไข / ลบเมนู และเปิด-ปิดสถานะ "พร้อมขาย/หมด"
+            </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <div class="px-4 py-2.5 rounded-2xl glass-hero border border-white/10 text-center min-w-[80px]">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">ทั้งหมด</div>
+                <div class="text-2xl font-black font-heading text-white">{{ stats.total }}</div>
+            </div>
+            <div class="px-4 py-2.5 rounded-2xl glass-hero border border-[#57ffa8]/30 text-center min-w-[80px]">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-[#57ffa8]">พร้อมขาย</div>
+                <div class="text-2xl font-black font-heading text-white">{{ stats.available }}</div>
+            </div>
+            <div class="px-4 py-2.5 rounded-2xl glass-hero border border-rose-500/30 text-center min-w-[80px]">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-rose-400">หมด</div>
+                <div class="text-2xl font-black font-heading text-white">{{ stats.unavailable }}</div>
+            </div>
+
+            <button onclick="openCreateModal()"
+                class="px-5 py-3 bg-[#57ffa8] hover:bg-[#43e693] text-slate-950 font-black rounded-2xl shadow-[0_0_20px_rgba(87,255,168,0.25)] transition flex items-center gap-2 text-sm">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                <span>เพิ่มเมนูใหม่</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="glass-hero p-4 rounded-3xl border border-white/10 space-y-3">
+        <form method="GET" action="{{ url_for('menus_page') }}" class="flex flex-col sm:flex-row gap-2">
+            <div class="relative flex-1">
+                <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="text" name="search" value="{{ search or '' }}" placeholder="ค้นหาชื่อเมนู..."
+                    class="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-white/10 rounded-2xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#57ffa8]">
+            </div>
+            {% if current_category %}
+            <input type="hidden" name="category" value="{{ current_category }}">
+            {% endif %}
+            {% if only_available %}
+            <input type="hidden" name="only_available" value="1">
+            {% endif %}
+            <button type="submit" class="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-2xl transition border border-white/10">
+                ค้นหา
+            </button>
+            {% if search or current_category or only_available %}
+            <a href="{{ url_for('menus_page') }}" class="px-4 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-bold rounded-2xl transition border border-rose-500/20">
+                ล้างตัวกรอง
+            </a>
+            {% endif %}
+        </form>
+
+        <div class="flex flex-wrap gap-2 pt-1">
+            <a href="{{ url_for('menus_page', search=search) }}"
+                class="px-4 py-1.5 rounded-full text-xs font-bold transition
+                {% if not current_category %}bg-[#57ffa8] text-slate-950 shadow-[0_0_15px_rgba(87,255,168,0.3)]{% else %}bg-white/5 text-slate-300 hover:bg-white/10 border border-white/5{% endif %}">
+                ทั้งหมด
+            </a>
+            {% for cat in categories %}
+            <a href="{{ url_for('menus_page', category=cat, search=search) }}"
+                class="px-4 py-1.5 rounded-full text-xs font-bold transition
+                {% if current_category == cat %}bg-[#57ffa8] text-slate-950 shadow-[0_0_15px_rgba(87,255,168,0.3)]{% else %}bg-white/5 text-slate-300 hover:bg-white/10 border border-white/5{% endif %}">
+                {{ cat }}
+            </a>
+            {% endfor %}
+
+            <a href="{{ url_for('menus_page', search=search, category=current_category, only_available='1' if not only_available else '') }}"
+                class="ml-auto px-4 py-1.5 rounded-full text-xs font-bold transition border
+                {% if only_available %}bg-amber-500/20 text-amber-300 border-amber-500/40{% else %}bg-white/5 text-slate-400 hover:bg-white/10 border-white/10{% endif %}">
+                {% if only_available %}✓ แสดงเฉพาะพร้อมขาย{% else %}แสดงเฉพาะพร้อมขาย{% endif %}
+            </a>
+        </div>
+    </div>
+
+    <!-- ตารางเมนู -->
+    <div class="glass-hero rounded-3xl border border-white/10 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-300">
+                <thead class="bg-white/5 text-[11px] font-bold uppercase font-mono text-slate-400 border-b border-white/10 tracking-wider">
+                    <tr>
+                        <th class="p-4 pl-6">รูป</th>
+                        <th class="p-4">ID / ชื่อเมนู</th>
+                        <th class="p-4">หมวดหมู่</th>
+                        <th class="p-4 text-right">ราคา</th>
+                        <th class="p-4 text-center">สถานะ</th>
+                        <th class="p-4 pr-6 text-right">จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                    {% for item in menus %}
+                    <tr class="hover:bg-white/[0.02] transition">
+                        <td class="p-3 pl-6">
+                            <img src="{{ item.image_url }}" alt="{{ item.name }}"
+                                class="w-14 h-14 rounded-2xl object-cover border border-white/10 bg-slate-900 {% if not item.is_available %}grayscale opacity-50{% endif %}"
+                                onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400';">
+                        </td>
+                        <td class="p-4">
+                            <div class="font-bold text-white text-sm">{{ item.name }}</div>
+                            <div class="text-[10px] font-mono text-slate-500 mt-0.5">{{ item.id }}</div>
+                        </td>
+                        <td class="p-4">
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/5 text-slate-300 border border-white/10">
+                                {{ item.category }}
+                            </span>
+                        </td>
+                        <td class="p-4 text-right">
+                            <span class="font-black text-[#57ffa8] font-mono text-sm">฿{{ "%.2f"|format(item.price) }}</span>
+                        </td>
+                        <td class="p-4 text-center">
+                            {% if item.is_available %}
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#57ffa8]/10 text-[#57ffa8] border border-[#57ffa8]/40">
+                                <span class="w-1.5 h-1.5 rounded-full bg-[#57ffa8]"></span>
+                                พร้อมขาย
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-300 border border-rose-500/40">
+                                <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+                                หมด
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="p-4 pr-6">
+                            <div class="flex items-center justify-end gap-1.5">
+                                <form action="{{ url_for('menus_toggle') }}" method="POST" class="inline">
+                                    <input type="hidden" name="id" value="{{ item.id }}">
+                                    <input type="hidden" name="is_available" value="{{ '0' if item.is_available else '1' }}">
+                                    <button type="submit" title="{% if item.is_available %}ปิดเมนู{% else %}เปิดเมนู{% endif %}"
+                                        class="w-8 h-8 rounded-xl flex items-center justify-center transition border
+                                        {% if item.is_available %}bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20
+                                        {% else %}bg-[#57ffa8]/10 text-[#57ffa8] border-[#57ffa8]/30 hover:bg-[#57ffa8]/20{% endif %}">
+                                        {% if item.is_available %}
+                                        <i data-lucide="eye-off" class="w-3.5 h-3.5"></i>
+                                        {% else %}
+                                        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                                        {% endif %}
+                                    </button>
+                                </form>
+
+                                <button type="button" title="แก้ไขเมนู"
+                                    class="edit-btn w-8 h-8 rounded-xl flex items-center justify-center bg-blue-500/10 text-blue-300 border border-blue-500/30 hover:bg-blue-500/20 transition"
+                                    data-id="{{ item.id }}"
+                                    data-name="{{ item.name }}"
+                                    data-category="{{ item.category }}"
+                                    data-price="{{ item.price }}"
+                                    data-image_url="{{ item.image_url }}"
+                                    data-is_available="{{ '1' if item.is_available else '0' }}">
+                                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                                </button>
+
+                                <form action="{{ url_for('menus_delete') }}" method="POST" class="inline"
+                                    onsubmit="return confirm('ยืนยันลบเมนู {{ item.name }}?\nการกระทำนี้ไม่สามารถย้อนกลับได้');">
+                                    <input type="hidden" name="id" value="{{ item.id }}">
+                                    <button type="submit" title="ลบเมนู"
+                                        class="w-8 h-8 rounded-xl flex items-center justify-center bg-rose-500/10 text-rose-300 border border-rose-500/30 hover:bg-rose-500/20 transition">
+                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="p-12 text-center text-slate-500">
+                            <i data-lucide="utensils" class="w-10 h-10 mx-auto mb-2 opacity-40"></i>
+                            <p class="text-sm font-medium">ไม่พบเมนูที่ตรงกับเงื่อนไข</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- ============ MODAL: CREATE / EDIT ============ -->
+<div id="menuModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div class="glass-hero rounded-3xl p-6 sm:p-8 w-full max-w-lg border border-white/20 relative">
+        <button type="button" onclick="closeModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center transition">
+            <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+
+        <div class="mb-5">
+            <h2 id="modalTitle" class="text-2xl font-black text-white font-heading tracking-tight">เพิ่มเมนูใหม่</h2>
+            <p id="modalSubtitle" class="text-slate-400 text-xs mt-1">กรอกข้อมูลเมนูให้ครบถ้วน</p>
+        </div>
+
+        <form id="menuForm" action="{{ url_for('menus_create') }}" method="POST" class="space-y-4">
+            <input type="hidden" id="field-id" name="id" value="">
+
+            <div>
+                <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 font-mono">ชื่อเมนู *</label>
+                <input type="text" id="field-name" name="name" required maxlength="100"
+                    class="w-full px-4 py-3 bg-slate-900 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-[#57ffa8]">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 font-mono">หมวดหมู่ *</label>
+                    <input type="text" id="field-category" name="category" required maxlength="50"
+                        placeholder="เช่น จานหลัก"
+                        class="w-full px-4 py-3 bg-slate-900 border border-white/10 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#57ffa8]">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 font-mono">ราคา (บาท) *</label>
+                    <input type="number" id="field-price" name="price" required min="0.01" step="0.01"
+                        class="w-full px-4 py-3 bg-slate-900 border border-white/10 rounded-xl text-sm text-white font-mono focus:outline-none focus:border-[#57ffa8]">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 font-mono">URL รูปภาพ</label>
+                <input type="url" id="field-image_url" name="image_url" maxlength="500"
+                    placeholder="https://images.unsplash.com/..."
+                    class="w-full px-4 py-3 bg-slate-900 border border-white/10 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#57ffa8]">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 font-mono">สถานะขาย</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <label class="flex items-center gap-2 p-3 bg-slate-900 border border-white/10 rounded-2xl cursor-pointer hover:border-[#57ffa8]">
+                        <input type="radio" id="field-avail-1" name="is_available" value="1" checked class="accent-[#57ffa8]">
+                        <span class="text-xs font-bold text-white">พร้อมขาย</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-3 bg-slate-900 border border-white/10 rounded-2xl cursor-pointer hover:border-rose-500">
+                        <input type="radio" id="field-avail-0" name="is_available" value="0" class="accent-rose-500">
+                        <span class="text-xs font-bold text-white">หมดชั่วคราว</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex gap-2 pt-2">
+                <button type="button" onclick="closeModal()"
+                    class="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl transition text-sm">
+                    ยกเลิก
+                </button>
+                <button type="submit"
+                    class="flex-1 py-3 bg-[#57ffa8] hover:bg-[#43e693] text-slate-950 font-black rounded-xl transition text-sm flex items-center justify-center gap-2">
+                    <i data-lucide="save" class="w-4 h-4"></i>
+                    <span id="modalSubmitText">บันทึกเมนู</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const modal = document.getElementById('menuModal');
+    const form = document.getElementById('menuForm');
+    const fieldId = document.getElementById('field-id');
+    const fieldName = document.getElementById('field-name');
+    const fieldCategory = document.getElementById('field-category');
+    const fieldPrice = document.getElementById('field-price');
+    const fieldImageUrl = document.getElementById('field-image_url');
+    const fieldAvail1 = document.getElementById('field-avail-1');
+    const fieldAvail0 = document.getElementById('field-avail-0');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalSubtitle = document.getElementById('modalSubtitle');
+    const modalSubmitText = document.getElementById('modalSubmitText');
+
+    const CREATE_URL = "{{ url_for('menus_create') }}";
+    const UPDATE_URL = "{{ url_for('menus_update') }}";
+
+    function openCreateModal() {
+        modalTitle.innerText = 'เพิ่มเมนูใหม่';
+        modalSubtitle.innerText = 'กรอกข้อมูลเมนูให้ครบถ้วน';
+        modalSubmitText.innerText = 'บันทึกเมนู';
+        form.action = CREATE_URL;
+        form.reset();
+        fieldId.value = '';
+        fieldAvail1.checked = true;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        setTimeout(() => fieldName.focus(), 100);
+    }
+
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            modalTitle.innerText = 'แก้ไขเมนู';
+            modalSubtitle.innerText = 'แก้ไขข้อมูลเมนูที่มีอยู่';
+            modalSubmitText.innerText = 'อัปเดตเมนู';
+            form.action = UPDATE_URL;
+
+            fieldId.value = btn.dataset.id || '';
+            fieldName.value = btn.dataset.name || '';
+            fieldCategory.value = btn.dataset.category || '';
+            fieldPrice.value = btn.dataset.price || '';
+            fieldImageUrl.value = btn.dataset.image_url || '';
+
+            if ((btn.dataset.is_available || '1') === '1') {
+                fieldAvail1.checked = true;
+            } else {
+                fieldAvail0.checked = true;
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => fieldName.focus(), 100);
+        });
+    });
+
+    function closeModal() {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    // ปิด modal เมื่อคลิก backdrop
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+    // ปิด modal ด้วย Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
+    });
+</script>
+{% endblock %}

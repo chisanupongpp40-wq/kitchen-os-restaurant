@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block title %}Audit Log ประวัติการทำงานระบบ - KITCHEN OS{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 glass-hero p-6 sm:p-8 rounded-3xl border border-white/10">
+        <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-bold tracking-wide mb-3">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                <span>SYSTEM SECURITY & AUDIT TRAIL</span>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-black text-white font-heading tracking-tight">Audit Logs</h1>
+            <p class="text-slate-400 text-xs sm:text-sm mt-1">
+                บันทึกประวัติการกระทำสำคัญในระบบ (ล็อกอิน, สั่งอาหาร, เปลี่ยนสถานะโต๊ะ, เช็คบิล)
+            </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <div class="px-5 py-3 rounded-2xl glass-hero border border-white/10 text-center min-w-[100px]">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">TOTAL LOGS</div>
+                <div class="text-2xl font-black font-heading text-white">{{ pagination.total }}</div>
+            </div>
+            <button onclick="location.reload()" class="p-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-2xl transition" title="รีเฟรชข้อมูล">
+                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- ค้นหา + ตัวเลือก per_page -->
+    <div class="glass-hero p-4 rounded-3xl border border-white/10 space-y-3">
+        <div class="flex flex-col sm:flex-row gap-3">
+            <!-- ค้นหา -->
+            <div class="relative flex-1">
+                <i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="text" id="logSearchInput" onkeyup="filterLogs()" placeholder="พิมพ์ค้นหาเหตุการณ์, ชื่อผู้ใช้, หรือการกระทำ..."
+                    class="w-full pl-11 pr-4 py-3 bg-slate-900 border border-white/10 rounded-2xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#57ffa8]">
+            </div>
+
+            <!-- per_page -->
+            <form method="GET" action="{{ url_for('logs') }}" class="flex items-center gap-2">
+                <label class="text-[11px] font-bold text-slate-400 uppercase font-mono whitespace-nowrap">แสดง/หน้า:</label>
+                <select name="per_page" onchange="this.form.submit()"
+                    class="px-3 py-3 bg-slate-900 border border-white/10 rounded-2xl text-xs text-white focus:outline-none focus:border-[#57ffa8] cursor-pointer">
+                    <option value="5" {% if pagination.per_page == 5 %}selected{% endif %}>5</option>
+                    <option value="10" {% if pagination.per_page == 10 %}selected{% endif %}>10</option>
+                    <option value="20" {% if pagination.per_page == 20 %}selected{% endif %}>20</option>
+                    <option value="50" {% if pagination.per_page == 50 %}selected{% endif %}>50</option>
+                </select>
+            </form>
+        </div>
+    </div>
+
+    <!-- ตาราง -->
+    <div class="glass-hero rounded-3xl border border-white/10 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-300">
+                <thead class="bg-white/5 text-[11px] font-bold uppercase font-mono text-slate-400 border-b border-white/10 tracking-wider">
+                    <tr>
+                        <th class="p-4 pl-6">LOG ID / วันเวลา</th>
+                        <th class="p-4">ผู้ใช้งาน (USER)</th>
+                        <th class="p-4">สิทธิ์ (ROLE)</th>
+                        <th class="p-4">เหตุการณ์ (ACTION)</th>
+                        <th class="p-4 pr-6">รายละเอียด (DETAILS)</th>
+                    </tr>
+                </thead>
+                <tbody id="logsTableBody" class="divide-y divide-white/5 font-mono">
+                    {% for log in logs %}
+                    <tr class="hover:bg-white/[0.02] transition log-row">
+                        <td class="p-4 pl-6">
+                            <span class="font-bold text-white block">{{ log.id }}</span>
+                            <span class="text-[10px] text-slate-500">
+                                {{ log.timestamp[:10] }} {{ log.timestamp[11:19] }}
+                            </span>
+                        </td>
+                        <td class="p-4">
+                            <span class="font-bold text-slate-200">{{ log.username }}</span>
+                        </td>
+                        <td class="p-4">
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border
+                                {% if log.role == 'admin' %}bg-purple-900/60 text-purple-300 border-purple-700/50
+                                {% elif log.role == 'staff' %}bg-blue-900/60 text-blue-300 border-blue-700/50
+                                {% else %}bg-emerald-900/60 text-emerald-300 border-emerald-700/50{% endif %}">
+                                {{ log.role }}
+                            </span>
+                        </td>
+                        <td class="p-4">
+                            <span class="px-2.5 py-1 rounded-xl text-[10px] font-bold border inline-block
+                                {% if 'login' in log.action or 'logout' in log.action %}bg-[#57ffa8]/10 text-[#57ffa8] border-[#57ffa8]/30
+                                {% elif 'order' in log.action %}bg-blue-500/10 text-blue-300 border-blue-500/30
+                                {% elif 'bill' in log.action %}bg-amber-500/10 text-amber-300 border-amber-500/30
+                                {% elif 'table' in log.action %}bg-purple-500/10 text-purple-300 border-purple-500/30
+                                {% else %}bg-white/5 text-slate-300 border-white/10{% endif %}">
+                                {{ log.action }}
+                            </span>
+                        </td>
+                        <td class="p-4 pr-6 text-slate-300 font-sans text-xs">
+                            {{ log.details }}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="p-12 text-center text-slate-500 font-sans">
+                            ยังไม่มีประวัติการบันทึกในระบบ
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- PAGINATION -->
+    <!-- ============================================ -->
+    {% if pagination.total > 0 %}
+    <div class="glass-hero p-4 rounded-3xl border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <!-- ข้อมูล -->
+        <div class="text-xs text-slate-400 font-mono">
+            แสดง <span class="text-white font-bold">{{ pagination.start }}</span>
+            - <span class="text-white font-bold">{{ pagination.end }}</span>
+            จาก <span class="text-[#57ffa8] font-bold">{{ pagination.total }}</span> รายการ
+        </div>
+
+        <!-- ปุ่ม -->
+        <div class="flex items-center gap-2">
+            {% if pagination.has_prev %}
+            <a href="{{ url_for('logs', page=pagination.prev_page, per_page=pagination.per_page) }}"
+                class="px-4 py-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+                <span>ก่อนหน้า</span>
+            </a>
+            {% else %}
+            <button disabled
+                class="px-4 py-2 bg-white/5 text-slate-600 border border-white/5 rounded-xl text-xs font-bold cursor-not-allowed flex items-center gap-1.5">
+                <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+                <span>ก่อนหน้า</span>
+            </button>
+            {% endif %}
+
+            <!-- เลขหน้า -->
+            <div class="px-4 py-2 bg-[#57ffa8]/10 border border-[#57ffa8]/30 rounded-xl">
+                <span class="text-xs font-bold text-[#57ffa8] font-mono">
+                    หน้า {{ pagination.page }} / {{ pagination.total_pages }}
+                </span>
+            </div>
+
+            {% if pagination.has_next %}
+            <a href="{{ url_for('logs', page=pagination.next_page, per_page=pagination.per_page) }}"
+                class="px-4 py-2 bg-[#57ffa8] hover:bg-[#43e693] text-slate-950 rounded-xl text-xs font-black transition flex items-center gap-1.5 shadow-[0_0_15px_rgba(87,255,168,0.25)]">
+                <span>ถัดไป</span>
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+            </a>
+            {% else %}
+            <button disabled
+                class="px-4 py-2 bg-white/5 text-slate-600 border border-white/5 rounded-xl text-xs font-bold cursor-not-allowed flex items-center gap-1.5">
+                <span>ถัดไป</span>
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function filterLogs() {
+        const input = document.getElementById("logSearchInput");
+        const filter = input.value.toLowerCase();
+        const rows = document.querySelectorAll(".log-row");
+
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(filter) ? "" : "none";
+        });
+    }
+</script>
+{% endblock %}

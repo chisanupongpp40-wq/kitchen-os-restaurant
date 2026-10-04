@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+{% block title %}สั่งอาหาร - โต๊ะ #{{ table.table_number }} - KITCHEN OS{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- แถบด้านบน -->
+    <div class="flex items-center justify-between glass-hero p-5 rounded-3xl border border-white/10">
+        <div class="flex items-center space-x-4">
+            <a href="{{ url_for('my_table') if current_user.role == 'customer' else url_for('tables') }}"
+               class="p-3 bg-white/5 hover:bg-white/10 text-white rounded-2xl transition border border-white/10">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </a>
+            <div>
+                <div class="flex items-center space-x-3">
+                    <h1 class="text-2xl font-black text-white font-heading tracking-tight">สั่งอาหาร โต๊ะ #{{ table.table_number }}</h1>
+                    <span class="px-3 py-0.5 rounded-full text-xs font-bold border
+                        {% if table.status == 'available' %}bg-[#57ffa8]/10 text-[#57ffa8] border-[#57ffa8]/30
+                        {% elif table.status == 'occupied' %}bg-amber-500/10 text-amber-300 border-amber-500/30
+                        {% else %}bg-rose-950/80 text-rose-300 border-rose-500/50{% endif %}">
+                        {% if table.status == 'available' %}ว่าง{% elif table.status == 'occupied' %}มีลูกค้า{% else %}รอเช็คบิล{% endif %}
+                    </span>
+                </div>
+                <p class="text-xs text-slate-400 mt-0.5">{{ table.seats }} ที่นั่ง | รายการสั่งส่งตรงเข้าจอครัว KDS</p>
+            </div>
+        </div>
+
+        <div class="hidden sm:block text-right">
+            <span class="text-[10px] text-slate-400 uppercase tracking-widest font-mono">BACK TO</span>
+            <div class="font-mono text-sm font-bold text-[#57ffa8]">
+                {% if current_user.role == 'customer' %}MY TABLE{% else %}FLOOR PLAN{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+
+        <!-- ฝั่งซ้าย: เมนูอาหาร -->
+        <div class="lg:col-span-2 space-y-4">
+            <div class="glass-hero p-4 rounded-3xl border border-white/10 space-y-3">
+                <form method="GET" action="{{ url_for('pos', table_id=table.id) }}" class="flex gap-2">
+                    {% if current_category %}
+                    <input type="hidden" name="category" value="{{ current_category }}">
+                    {% endif %}
+                    <div class="relative flex-1">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" name="search" value="{{ search or '' }}" placeholder="ค้นหาชื่ออาหารหรือเครื่องดื่ม..."
+                            class="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-white/10 rounded-2xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#57ffa8]">
+                    </div>
+                    <button type="submit" class="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-2xl transition border border-white/10">
+                        ค้นหา
+                    </button>
+                    {% if search or current_category %}
+                    <a href="{{ url_for('pos', table_id=table.id) }}" class="px-4 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-bold rounded-2xl transition border border-rose-500/20 flex items-center">
+                        ล้าง
+                    </a>
+                    {% endif %}
+                </form>
+
+                <div class="flex flex-wrap gap-2 pt-1">
+                    <a href="{{ url_for('pos', table_id=table.id, search=search) }}"
+                        class="px-4 py-1.5 rounded-full text-xs font-bold transition
+                        {% if not current_category %}bg-[#57ffa8] text-slate-950 shadow-[0_0_15px_rgba(87,255,168,0.3)]{% else %}bg-white/5 text-slate-300 hover:bg-white/10 border border-white/5{% endif %}">
+                        ทั้งหมด
+                    </a>
+                    {% for cat in categories %}
+                    <a href="{{ url_for('pos', table_id=table.id, category=cat, search=search) }}"
+                        class="px-4 py-1.5 rounded-full text-xs font-bold transition
+                        {% if current_category == cat %}bg-[#57ffa8] text-slate-950 shadow-[0_0_15px_rgba(87,255,168,0.3)]{% else %}bg-white/5 text-slate-300 hover:bg-white/10 border border-white/5{% endif %}">
+                        {{ cat }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {% for item in menus %}
+                <div class="glass-hero rounded-3xl border border-white/10 overflow-hidden flex flex-col justify-between hover:border-white/25 transition group">
+                    <div class="relative h-44 bg-slate-900 overflow-hidden">
+                        <img src="{{ item.image_url }}" alt="{{ item.name }}"
+                            class="w-full h-full object-cover transition duration-500 group-hover:scale-105 {% if not item.is_available %}grayscale opacity-40{% endif %}"
+                            onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400';">
+                        <span class="absolute top-3 left-3 bg-black/70 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full border border-white/10">
+                            {{ item.category }}
+                        </span>
+                        {% if not item.is_available %}
+                        <div class="absolute inset-0 bg-black/75 backdrop-blur-[2px] flex items-center justify-center">
+                            <span class="bg-rose-600 text-white font-black text-xs px-3.5 py-1.5 rounded-full shadow-xl">หมดชั่วคราว</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="p-5 flex-1 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-bold text-white text-base mb-1 leading-snug">{{ item.name }}</h4>
+                            <div class="text-[#57ffa8] font-black text-lg font-mono">฿{{ "%.2f"|format(item.price) }}</div>
+                        </div>
+
+                        <div class="mt-4">
+                            {% if item.is_available %}
+                            <button type="button"
+                                class="add-btn w-full py-2.5 bg-[#57ffa8] hover:bg-[#43e693] text-slate-950 font-black rounded-xl text-xs flex items-center justify-center gap-1.5 transition shadow-[0_0_15px_rgba(87,255,168,0.2)]"
+                                data-id="{{ item.id }}"
+                                data-name="{{ item.name }}"
+                                data-price="{{ item.price }}">
+                                <i data-lucide="plus" class="w-4 h-4"></i>
+                                <span>เพิ่มลงตะกร้า</span>
+                            </button>
+                            {% else %}
+                            <button disabled type="button"
+                                class="w-full py-2.5 bg-white/5 text-slate-500 font-bold rounded-xl text-xs flex items-center justify-center gap-1 cursor-not-allowed border border-white/5">
+                                <i data-lucide="ban" class="w-3.5 h-3.5"></i>
+                                <span>ไม่พร้อมจำหน่าย</span>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-span-full glass-hero p-10 rounded-3xl text-center text-slate-400 border border-white/10">
+                    <i data-lucide="utensils" class="w-10 h-10 mx-auto mb-2 opacity-40"></i>
+                    <p class="text-sm font-medium">ไม่พบเมนูอาหารที่ค้นหา</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- ฝั่งขวา: ตะกร้า -->
+        <div class="glass-hero p-6 rounded-3xl border border-white/10 sticky top-20 space-y-4">
+            <div class="flex items-center justify-between pb-4 border-b border-white/10">
+                <h3 class="font-bold text-white flex items-center gap-2 font-heading text-lg">
+                    <i data-lucide="shopping-cart" class="w-5 h-5 text-[#57ffa8]"></i>
+                    <span>รายการสั่งอาหาร</span>
+                </h3>
+                <span id="cart-count-badge" class="bg-[#57ffa8]/20 text-[#57ffa8] border border-[#57ffa8]/30 text-xs font-bold px-2.5 py-0.5 rounded-full font-mono">0 รายการ</span>
+            </div>
+
+            <form id="order-form" action="{{ url_for('pos_order') }}" method="POST">
+                <input type="hidden" name="table_id" value="{{ table.id }}">
+
+                <div id="cart-items-container" class="space-y-3 max-h-[380px] overflow-y-auto pr-1">
+                    <div id="empty-cart-msg" class="text-center py-12 text-slate-500 text-xs">
+                        <i data-lucide="shopping-bag" class="w-8 h-8 mx-auto mb-2 opacity-30"></i>
+                        ยังไม่มีรายการอาหารในตะกร้า<br>กดปุ่ม "เพิ่มลงตะกร้า" จากเมนูฝั่งซ้าย
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-white/10">
+                    <label for="order-note" class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1 font-mono">ORDER NOTE (หมายเหตุ)</label>
+                    <input type="text" id="order-note" name="note" placeholder="เช่น ขอช้อนเพิ่ม, เสิร์ฟพร้อมกัน"
+                        class="w-full px-3 py-2 bg-slate-900 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:border-[#57ffa8]">
+                </div>
+
+                <div class="mt-4 pt-4 border-t border-white/10">
+                    <div class="flex justify-between items-center text-sm font-semibold text-slate-400 mb-1">
+                        <span>ยอดรวมโดยประมาณ:</span>
+                        <span id="cart-total-price" class="text-2xl font-black text-white font-mono">฿0.00</span>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mb-4">*ยังไม่รวม Service Charge 10% และ VAT 7%</p>
+
+                    <button type="submit" id="submit-order-btn" disabled
+                        class="w-full py-3.5 bg-[#57ffa8] hover:bg-[#43e693] disabled:bg-white/10 disabled:text-slate-500 disabled:cursor-not-allowed text-slate-950 font-black rounded-2xl shadow-[0_0_20px_rgba(87,255,168,0.25)] transition duration-200 flex items-center justify-center gap-2">
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                        <span>ยืนยันส่งเข้าครัว (KDS)</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let cart = {};
+
+    document.querySelectorAll('.add-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.dataset.id;
+            const name = btn.dataset.name;
+            const price = parseFloat(btn.dataset.price) || 0;
+            addToCart(id, name, price);
+        });
+    });
+
+    function addToCart(menuId, name, price) {
+        if (cart[menuId]) {
+            cart[menuId].quantity += 1;
+        } else {
+            cart[menuId] = { id: menuId, name: name, price: price, quantity: 1, note: "" };
+        }
+        renderCart();
+    }
+
+    function updateQuantity(menuId, delta) {
+        if (!cart[menuId]) return;
+        cart[menuId].quantity += delta;
+        if (cart[menuId].quantity <= 0) delete cart[menuId];
+        renderCart();
+    }
+
+    function updateItemNote(menuId, note) {
+        if (cart[menuId]) cart[menuId].note = note;
+    }
+
+    function renderCart() {
+        const container = document.getElementById('cart-items-container');
+        const totalElem = document.getElementById('cart-total-price');
+        const countBadge = document.getElementById('cart-count-badge');
+        const submitBtn = document.getElementById('submit-order-btn');
+
+        const keys = Object.keys(cart);
+
+        if (keys.length === 0) {
+            container.innerHTML = `
+                <div id="empty-cart-msg" class="text-center py-12 text-slate-500 text-xs">
+                    <i data-lucide="shopping-bag" class="w-8 h-8 mx-auto mb-2 opacity-30"></i>
+                    ยังไม่มีรายการอาหารในตะกร้า<br>กดปุ่ม "เพิ่มลงตะกร้า" จากเมนูฝั่งซ้าย
+                </div>
+            `;
+            totalElem.innerText = '฿0.00';
+            countBadge.innerText = '0 รายการ';
+            submitBtn.disabled = true;
+            lucide.createIcons();
+            return;
+        }
+
+        let total = 0;
+        let totalItems = 0;
+        let html = '';
+
+        keys.forEach(id => {
+            const item = cart[id];
+            const itemTotal = item.price * item.quantity;
+            total += itemTotal;
+            totalItems += item.quantity;
+
+            html += `
+                <div class="bg-slate-900/80 p-3.5 rounded-2xl border border-white/10 text-xs space-y-2">
+                    <input type="hidden" name="menu_id[]" value="${item.id}">
+                    <input type="hidden" name="quantity[]" value="${item.quantity}">
+                    <div class="flex justify-between items-start">
+                        <div class="font-bold text-white leading-tight">${item.name}</div>
+                        <div class="font-black text-[#57ffa8] font-mono ml-2">฿${itemTotal.toFixed(2)}</div>
+                    </div>
+                    <div class="flex items-center justify-between gap-2">
+                        <input type="text" name="item_note[]" value="${item.note}"
+                            onchange="updateItemNote('${item.id}', this.value)"
+                            placeholder="โน้ต: เช่น เผ็ดน้อย"
+                            class="px-2.5 py-1 bg-slate-950 border border-white/10 rounded-xl text-[11px] text-white flex-1 focus:outline-none focus:border-[#57ffa8]">
+                        <div class="flex items-center space-x-1 bg-slate-950 border border-white/10 rounded-xl p-0.5">
+                            <button type="button" onclick="updateQuantity('${item.id}', -1)"
+                                class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition font-bold">-</button>
+                            <span class="w-6 text-center font-bold font-mono text-white">${item.quantity}</span>
+                            <button type="button" onclick="updateQuantity('${item.id}', 1)"
+                                class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition font-bold">+</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+        totalElem.innerText = `฿${total.toFixed(2)}`;
+        countBadge.innerText = `${totalItems} รายการ`;
+        submitBtn.disabled = false;
+        lucide.createIcons();
+    }
+</script>
+{% endblock %}
