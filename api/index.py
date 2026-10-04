@@ -1670,7 +1670,15 @@ def inject_user() -> Dict[str, Any]:
     except Exception:
         return {"current_user": {"username": "", "role": "", "name": ""}, "now": datetime.now()}
 
-
+@app.route("/<path:path>")
+def catch_all(path: str) -> Any:
+    """Fallback: รับทุก path ที่ไม่ match → redirect ไปหน้าแรก"""
+    try:
+        if session.get("username"):
+            return redirect(_landing_url_for_role(str(session.get("role", ""))))
+        return redirect(url_for("login"))
+    except Exception:
+        return redirect(url_for("login"))
 # ===============================================================
 # 17) Entry Point
 # ===============================================================
